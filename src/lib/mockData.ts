@@ -45,10 +45,45 @@ export interface Event {
   is_verified: boolean;
   status: EventStatus;
   submitted_by_user_id: string;
+  fee?: string;
+  eligibility?: string;
+  team_size?: string;
+  prizes?: string;
+  certificate?: boolean;
+  reg_deadline?: string;
+  tags?: string[];
+  mode?: "Physical" | "Online" | "Hybrid";
 }
 
 // All dates relative to current date context: 2026-09-28 (PKT)
 export const mockEvents: Event[] = [
+  // -- FEATURED / SCREENSHOT EVENT -------------------------------------------
+  {
+    id: "evt-000",
+    title: "AI Hackathon 2026 - Build the Future",
+    description:
+      "A 12-hour hackathon focused on building AI-powered solutions for real-world problems in Pakistan. Teams of 2-4 will compete for prizes worth Rs. 500,000. Mentors from top tech companies will guide participants throughout the event.",
+    event_date: "2026-10-20",
+    start_time: "09:00",
+    end_time: "21:00",
+    city: "Karachi",
+    category: "Technology",
+    event_type: "Hackathon",
+    location_details: "FAST NUCES Karachi Campus, Karachi",
+    registration_url: "https://gdgkarachi.com/ai-hackathon-2026",
+    organizer_name: "GDG Karachi",
+    is_verified: true,
+    status: "approved",
+    submitted_by_user_id: "user-gdg",
+    fee: "Free",
+    eligibility: "University students",
+    team_size: "2-4 members",
+    prizes: "Rs. 500,000 total prize pool",
+    certificate: true,
+    reg_deadline: "Sep 18",
+    tags: ["AI", "Machine Learning", "Hackathon"],
+    mode: "Physical",
+  },
   // -- HAPPENING TODAY -------------------------------------------------------
   {
     id: "evt-001",
@@ -67,6 +102,14 @@ export const mockEvents: Event[] = [
     is_verified: true,
     status: "approved",
     submitted_by_user_id: "user-101",
+    fee: "Free",
+    eligibility: "Open to all shortlisted finalists",
+    team_size: "Individual",
+    prizes: "Rs. 1,000,000 in cash & trophies",
+    certificate: true,
+    reg_deadline: "Sep 25",
+    tags: ["Coding", "Algorithms", "Competition"],
+    mode: "Physical",
   },
   {
     id: "evt-002",
