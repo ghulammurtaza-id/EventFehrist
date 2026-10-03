@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Inter } from "next/font/google";
@@ -13,7 +13,7 @@ const inter = Inter({
   display: "swap",
 });
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const showResetForm = searchParams.get("reset") === "true";
@@ -94,13 +94,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      className={`min-h-screen flex flex-col bg-white text-slate-900 ${inter.className}`}
-    >
-      <Navbar />
-
-      <main className="flex-1 flex items-center justify-center px-4 py-16">
-        <div className="w-full max-w-[430px] bg-white border border-slate-200 rounded-sm p-7 sm:p-8 shadow-sm">
+    <div className="w-full max-w-[430px] bg-white border border-slate-200 rounded-sm p-7 sm:p-8 shadow-sm">
           {showResetForm ? (
             <>
               {/* RESET FORM */}
@@ -295,10 +289,31 @@ export default function LoginPage() {
               </div>
             </>
           )}
-        </div>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <div
+      className={`min-h-screen flex flex-col bg-white text-slate-900 ${inter.className}`}
+    >
+      <Navbar />
+
+      <main className="flex-1 flex items-center justify-center px-4 py-16">
+        <Suspense
+          fallback={
+            <div className="w-full max-w-[430px] bg-white border border-slate-200 rounded-sm p-7 sm:p-8 shadow-sm flex items-center justify-center min-h-[300px] text-slate-500 text-sm">
+              Loading...
+            </div>
+          }
+        >
+          <LoginForm />
+        </Suspense>
       </main>
 
       <Footer />
     </div>
   );
 }
+
