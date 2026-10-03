@@ -245,9 +245,16 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
           {/* ── Description ───────────────────────────────────────────────────── */}
           <div className="mt-6">
             <h3 className="text-base font-medium text-slate-900 mb-2">Description</h3>
-            <p className="text-sm font-medium text-slate-600 leading-relaxed">
-              {event.description}
-            </p>
+            {event.description && event.description.includes("<") ? (
+              <div
+                className="ql-editor description-preview !p-0 text-sm font-medium text-slate-600 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: event.description }}
+              />
+            ) : (
+              <p className="text-sm font-medium text-slate-600 leading-relaxed whitespace-pre-line">
+                {event.description || "No description provided."}
+              </p>
+            )}
           </div>
 
           {/* ── Tags ─────────────────────────────────────────────────────────── */}

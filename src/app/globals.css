@@ -72,3 +72,92 @@ select:focus {
   display: none;
   /* Chrome/Safari/Opera */
 }
+
+/* ── Quill Rich Text Editor Overrides ─────────────────────────────── */
+.quill-wrapper .ql-toolbar.ql-snow,
+.quill-wrapper .ql-container.ql-snow {
+  border-color: #cbd5e1 !important;
+  border-radius: 2px !important;
+  font-family: inherit;
+}
+
+.quill-wrapper .ql-toolbar.ql-snow {
+  border-bottom: none !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  background-color: #f8fafc;
+}
+
+.quill-wrapper .ql-container.ql-snow {
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  font-size: 0.875rem;
+}
+
+.quill-wrapper .ql-editor {
+  min-height: 200px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.quill-wrapper .ql-editor.ql-blank::before {
+  color: #94a3b8;
+  font-style: normal;
+  font-size: 0.875rem;
+}
+
+/* Focus state: turns Brand Blue #186BA7 */
+.quill-wrapper:focus-within .ql-toolbar.ql-snow,
+.quill-wrapper:focus-within .ql-container.ql-snow {
+  border-color: #186BA7 !important;
+}
+
+/* ── Description Preview: override Quill's list suppression ──────────── */
+/* react-quill-new onChange stores semantic <ol>/<ul>/<li> HTML.           */
+/* The preview div has both ql-editor + description-preview classes.        */
+/* .description-preview.ql-editor (2 classes, specificity 0,2,0)           */
+/* beats .ql-editor alone (0,1,0) — restoring markers & indentation.       */
+
+.description-preview.ql-editor ol,
+.description-preview.ql-editor ul {
+  padding-left: 1.2em !important;
+  margin: 0 !important;
+}
+
+.description-preview.ql-editor ol > li {
+  list-style-type: decimal !important;
+  padding-left: 0 !important;
+  margin: 0 !important;
+}
+
+.description-preview.ql-editor ul > li {
+  list-style-type: disc !important;
+  padding-left: 0 !important;
+  margin: 0 !important;
+}
+
+/* Restore empty-line height: <p><br></p> from getSemanticHTML() */
+.description-preview.ql-editor p:has(> br:only-child),
+.description-preview.ql-editor p:empty {
+  min-height: 1.4em;
+}
+
+/* Sync line-height between write and preview */
+.description-preview.ql-editor li,
+.description-preview.ql-editor p {
+  line-height: 1.6 !important;
+}
+
+/* ── Quill write-editor: list alignment & line-height ────────────────── */
+.quill-wrapper .ql-editor ol,
+.quill-wrapper .ql-editor ul {
+  padding-left: 1.2em !important;
+  margin: 0 !important;
+}
+
+.quill-wrapper .ql-editor li {
+  line-height: 1.6;
+  margin: 0 !important;
+  padding-left: 0 !important;
+}

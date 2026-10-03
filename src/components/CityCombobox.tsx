@@ -151,9 +151,10 @@ export const ALL_CITIES = [
 interface CityComboboxProps {
   value: string;
   onChange: (city: string) => void;
+  className?: string;
 }
 
-export default function CityCombobox({ value, onChange }: CityComboboxProps) {
+export default function CityCombobox({ value, onChange, className }: CityComboboxProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -219,14 +220,18 @@ export default function CityCombobox({ value, onChange }: CityComboboxProps) {
 
   return (
     <>
-      <div ref={containerRef} className="relative inline-block text-left">
+      <div ref={containerRef} className={`relative text-left ${className || "inline-block"}`}>
         {/* Trigger Button */}
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
           aria-haspopup="listbox"
           aria-expanded={open}
-          className="h-8 min-w-[130px] max-w-[170px] flex items-center justify-between gap-1.5 px-2.5 text-sm border border-slate-300 bg-white text-slate-800 rounded-sm hover:border-slate-400 focus:outline-none focus:border-[#186BA7] cursor-pointer transition-colors"
+          className={`${
+            className
+              ? "h-10 w-full flex items-center justify-between gap-1.5 px-3 text-sm border border-slate-300 bg-white text-slate-800 rounded-none hover:border-slate-400 focus:outline-none focus:border-[#186BA7] cursor-pointer transition-colors"
+              : "h-8 min-w-[130px] max-w-[170px] flex items-center justify-between gap-1.5 px-2.5 text-sm border border-slate-300 bg-white text-slate-800 rounded-sm hover:border-slate-400 focus:outline-none focus:border-[#186BA7] cursor-pointer transition-colors"
+          }`}
         >
           <span className="truncate font-medium">{value}</span>
           <svg
@@ -254,7 +259,7 @@ export default function CityCombobox({ value, onChange }: CityComboboxProps) {
 
         {/* Popover: bottom-sheet on mobile, anchored popover on desktop */}
         {open && (
-          <div className="fixed inset-x-0 bottom-0 z-50 bg-white border-t border-slate-300 shadow-2xl rounded-t-lg max-h-[75vh] flex flex-col sm:absolute sm:inset-auto sm:left-0 sm:top-full sm:mt-1 sm:w-[240px] sm:max-h-[390px] sm:rounded-sm sm:border sm:border-slate-300 sm:shadow-lg transition-colors">
+          <div className="fixed inset-x-0 bottom-0 z-50 bg-white border-t border-slate-300 shadow-2xl rounded-t-lg max-h-[75vh] flex flex-col sm:absolute sm:inset-auto sm:left-0 sm:top-full sm:mt-1 sm:w-full sm:min-w-[240px] sm:max-h-[390px] sm:rounded-sm sm:border sm:border-slate-300 sm:shadow-lg transition-colors">
             {/* Mobile Sheet Handle */}
             <div className="sm:hidden pt-2.5 pb-1 flex flex-col items-center">
               <div className="w-10 h-1 bg-slate-300 rounded-full mb-2" />
@@ -439,9 +444,9 @@ function AllCitiesModal({
       aria-modal="true"
       aria-labelledby="modal-title"
     >
-      <div className="bg-white w-full sm:max-w-xl rounded-t-xl sm:rounded-sm border border-slate-300 shadow-2xl flex flex-col max-h-[88vh] sm:max-h-[580px] transition-colors">
+      <div className="bg-white w-full sm:max-w-xl rounded-t-xl sm:rounded-sm border border-slate-300 shadow-2xl max-h-[90vh] flex flex-col transition-colors">
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 flex-shrink-0">
           <div>
             <h2 id="modal-title" className="text-base font-semibold text-slate-900">
               Cities in Pakistan
@@ -463,7 +468,7 @@ function AllCitiesModal({
         </div>
 
         {/* Search Input — seamless, no inner box */}
-        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-200">
+        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-200 flex-shrink-0">
           <svg
             className="w-4 h-4 text-slate-400 shrink-0"
             viewBox="0 0 20 20"
@@ -496,7 +501,7 @@ function AllCitiesModal({
         </div>
 
         {/* Modal List View */}
-        <div className="overflow-y-auto flex-1 p-4">
+        <div className="flex-1 overflow-y-auto px-4 my-4">
           {/* Quick Select "All Cities" */}
           <button
             type="button"
@@ -554,7 +559,7 @@ function AllCitiesModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-4 py-2.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-500">
+        <div className="px-4 py-2.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-500 flex-shrink-0">
           <span>Showing {filtered.length} of {ALL_CITIES.length} cities</span>
           <button
             type="button"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import {
   approvedEvents,
   EVENT_TYPES,
@@ -19,7 +20,6 @@ import EventDetailsModal from "@/components/EventDetailsModal";
 // Evaluated once at module level to avoid hydration mismatch.
 const TODAY_ISO = new Date().toISOString().split("T")[0];
 
-const EVENTS_PER_PAGE = 6;
 
 // Category pills shown in the filter row
 const CATEGORY_PILLS: (EventCategory | "All")[] = [
@@ -61,7 +61,7 @@ export default function HomePage() {
 
   // ── Pagination ───────────────────────────────────────────────────────────────
   const [currentPage, setCurrentPage] = useState(1);
-  const [eventsPerPage, setEventsPerPage] = useState(10);
+  const EVENTS_PER_PAGE_COUNT = 10;
 
   // ── Derived: filtered events ─────────────────────────────────────────────────
   const filteredEvents = useMemo(() => {
@@ -100,10 +100,10 @@ export default function HomePage() {
   }, [selectedCity, selectedCategory, selectedDate, selectedType, searchQuery]);
 
   // ── Derived: paginated slice ─────────────────────────────────────────────────
-  const totalPages = Math.max(1, Math.ceil(filteredEvents.length / eventsPerPage));
+  const totalPages = Math.max(1, Math.ceil(filteredEvents.length / EVENTS_PER_PAGE_COUNT));
   const safePage = Math.min(currentPage, totalPages);
-  const startIndex = (safePage - 1) * eventsPerPage;
-  const paginatedEvents = filteredEvents.slice(startIndex, startIndex + eventsPerPage);
+  const startIndex = (safePage - 1) * EVENTS_PER_PAGE_COUNT;
+  const paginatedEvents = filteredEvents.slice(startIndex, startIndex + EVENTS_PER_PAGE_COUNT);
 
 
   // City label
@@ -167,9 +167,12 @@ export default function HomePage() {
           <button className="px-4 py-2 text-xs sm:text-sm font-semibold tracking-wider border border-gray-300 dark:border-slate-600 bg-gray-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:bg-gray-200 dark:hover:bg-slate-700 hover:border-gray-400 dark:hover:border-slate-500 active:bg-gray-300 dark:active:bg-slate-600 active:scale-[0.98] transition-all duration-150 ease-in-out rounded-none cursor-pointer">
             TASKS
           </button>
-          <button className="px-4 py-2 text-xs sm:text-sm font-semibold tracking-wider border border-gray-300 dark:border-slate-600 bg-gray-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:bg-gray-200 dark:hover:bg-slate-700 hover:border-gray-400 dark:hover:border-slate-500 active:bg-gray-300 dark:active:bg-slate-600 active:scale-[0.98] transition-all duration-150 ease-in-out rounded-none cursor-pointer">
+          <Link
+            href="/submit"
+            className="px-4 py-2 text-xs sm:text-sm font-semibold tracking-wider border border-gray-300 dark:border-slate-600 bg-gray-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:bg-gray-200 dark:hover:bg-slate-700 hover:border-gray-400 dark:hover:border-slate-500 active:bg-gray-300 dark:active:bg-slate-600 active:scale-[0.98] transition-all duration-150 ease-in-out rounded-none cursor-pointer inline-flex items-center justify-center"
+          >
             SUBMIT EVENT
-          </button>
+          </Link>
         </div>
 
         {/* City Row */}
@@ -330,7 +333,7 @@ export default function HomePage() {
                 {paginatedEvents.length}
               </span>{" "}
               events
-              {filteredEvents.length > EVENTS_PER_PAGE && (
+              {filteredEvents.length > EVENTS_PER_PAGE_COUNT && (
                 <span className="text-slate-400 dark:text-slate-500">
                   {" "}
                   (of {filteredEvents.length} total)
@@ -347,47 +350,12 @@ export default function HomePage() {
             />
 
             {/* ── Pagination ─────────────────────────────────────────────────── */}
-            {filteredEvents.length > 0 && (
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5 text-sm text-slate-600 dark:text-slate-300 select-none">
-                {/* First */}
-                <PagBtn onClick={() => goToPage(1)} disabled={safePage === 1} label="«" />
-                {/* Prev */}
-                <PagBtn onClick={() => goToPage(safePage - 1)} disabled={safePage === 1} label="‹" />
-
-                <span className="px-3 text-slate-600 dark:text-slate-300 font-medium">
-                  Page {safePage} of {totalPages}
-                </span>
-
-                {/* Next */}
-                <PagBtn onClick={() => goToPage(safePage + 1)} disabled={safePage === totalPages} label="›" />
-                {/* Last */}
-                <PagBtn onClick={() => goToPage(totalPages)} disabled={safePage === totalPages} label="»" />
-
-                {/* Go to page */}
-                <span className="text-slate-500 dark:text-slate-400 ml-2">Go to page:</span>
-                <input
-                  type="number"
-                  min={1}
-                  max={totalPages}
-                  value={safePage}
-                  onChange={(e) => goToPage(Number(e.target.value))}
-                  className="w-14 h-8 text-center border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 text-sm outline-none focus:border-[#186BA7] dark:focus:border-[#60a5fa] text-slate-900 dark:text-slate-100 rounded-sm transition-colors"
-                />
-
-                <span className="text-slate-500 dark:text-slate-400 ml-1">Per Page</span>
-                <select
-                  className="h-8 w-20 sm:w-24 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 text-sm outline-none cursor-pointer text-slate-700 dark:text-slate-100 rounded-sm focus:border-[#186BA7] dark:focus:border-[#60a5fa] transition-colors"
-                  value={eventsPerPage}
-                  onChange={(e) => {
-                    setEventsPerPage(Number(e.target.value));
-                    setCurrentPage(1);
-                  }}
-                >
-                  <option value={10}>10</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                </select>
-              </div>
+            {filteredEvents.length > EVENTS_PER_PAGE_COUNT && (
+              <Pagination
+                currentPage={safePage}
+                totalPages={totalPages}
+                onPageChange={goToPage}
+              />
             )}
           </div>
         </div>
@@ -408,24 +376,81 @@ export default function HomePage() {
   );
 }
 
-// ── Sub-component: pagination button ────────────────────────────────────────
-function PagBtn({
-  onClick,
-  disabled,
-  label,
+// ── Sub-component: modern pagination ────────────────────────────────────────
+function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
 }: {
-  onClick: () => void;
-  disabled: boolean;
-  label: string;
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (p: number) => void;
 }) {
+  // Build the page number list with ellipsis logic
+  function getPageNumbers(): (number | "...")[] {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    const pages: (number | "...")[] = [1];
+    if (currentPage > 3) pages.push("...");
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (currentPage < totalPages - 2) pages.push("...");
+    pages.push(totalPages);
+    return pages;
+  }
+
+  const btnBase =
+    "w-8 h-8 flex items-center justify-center text-sm border rounded-sm transition-colors cursor-pointer select-none";
+  const btnDefault =
+    "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700";
+  const btnActive =
+    "bg-[#186BA7] text-white border-[#186BA7] font-semibold";
+  const btnDisabled =
+    "opacity-40 cursor-not-allowed pointer-events-none";
+
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className="w-8 h-8 flex items-center justify-center border border-gray-300 dark:border-slate-600 bg-gray-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-semibold hover:bg-gray-200 dark:hover:bg-slate-700 hover:border-gray-400 dark:hover:border-slate-500 active:bg-gray-300 dark:active:bg-slate-600 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none transition-all duration-150 ease-in-out text-sm rounded-none cursor-pointer shadow-2xs"
-      style={{ borderRadius: 0 }}
-    >
-      {label}
-    </button>
+    <div className="mt-5 flex items-center justify-center gap-2 select-none">
+      {/* Prev */}
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className={`${btnBase} ${btnDefault} ${currentPage === 1 ? btnDisabled : ""}`}
+        aria-label="Previous page"
+      >
+        &#8249;
+      </button>
+
+      {/* Page numbers */}
+      {getPageNumbers().map((p, i) =>
+        p === "..." ? (
+          <span key={`ellipsis-${i}`} className="w-8 h-8 flex items-center justify-center text-slate-400 text-sm">
+            &hellip;
+          </span>
+        ) : (
+          <button
+            key={p}
+            onClick={() => onPageChange(p as number)}
+            className={`${btnBase} ${
+              currentPage === p ? btnActive : btnDefault
+            }`}
+            aria-current={currentPage === p ? "page" : undefined}
+          >
+            {p}
+          </button>
+        )
+      )}
+
+      {/* Next */}
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className={`${btnBase} ${btnDefault} ${currentPage === totalPages ? btnDisabled : ""}`}
+        aria-label="Next page"
+      >
+        &#8250;
+      </button>
+    </div>
   );
 }
