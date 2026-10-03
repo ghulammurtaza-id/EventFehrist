@@ -53,6 +53,7 @@ function LoginForm() {
       }
 
       if (data?.user) {
+        router.refresh();
         router.push("/");
       }
     } catch {
