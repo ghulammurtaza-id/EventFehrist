@@ -1,9 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
-// Database type definitions for Supabase
-// Can be replaced or updated with generated types from Supabase CLI:
-// npx supabase gen types typescript --project-id <your-project-id> > src/types/supabase.ts
+// Database type definitions for Supabase matching the Postgres schema
 export type Json =
   | string
   | number
@@ -18,81 +15,119 @@ export interface Database {
       events: {
         Row: {
           id: string
-          title: string
-          description: string | null
+          organizer_id: string | null
+          event_name: string
+          organizer_name: string
+          category: string
+          event_type: string
           event_date: string
           start_time: string | null
           end_time: string | null
+          registration_opens: string | null
+          registration_deadline: string | null
           city: string
-          category: string
-          event_type: string
-          location_details: string | null
+          venue_location: string
+          description: string
           registration_url: string | null
-          organizer_name: string
-          is_verified: boolean
-          status: string
-          submitted_by_user_id: string | null
-          fee: string | null
-          eligibility: string | null
-          team_size: string | null
-          prizes: string | null
-          certificate: boolean | null
-          reg_deadline: string | null
-          tags: string[] | null
-          mode: string | null
-          created_at: string | null
+          website_social: string | null
+          fee: string
+          status: string | null
+          audience: string[] | null
+          level: string[] | null
+          highlights: string[] | null
+          created_at: string
+          review_notes: string | null
         }
         Insert: {
           id?: string
-          title: string
-          description?: string | null
+          organizer_id?: string | null
+          event_name: string
+          organizer_name: string
+          category: string
+          event_type: string
           event_date: string
           start_time?: string | null
           end_time?: string | null
+          registration_opens?: string | null
+          registration_deadline?: string | null
           city: string
-          category: string
-          event_type: string
-          location_details?: string | null
+          venue_location: string
+          description: string
           registration_url?: string | null
-          organizer_name: string
-          is_verified?: boolean
-          status?: string
-          submitted_by_user_id?: string | null
-          fee?: string | null
-          eligibility?: string | null
-          team_size?: string | null
-          prizes?: string | null
-          certificate?: boolean | null
-          reg_deadline?: string | null
-          tags?: string[] | null
-          mode?: string | null
-          created_at?: string | null
+          website_social?: string | null
+          fee: string
+          status?: string | null
+          audience?: string[] | null
+          level?: string[] | null
+          highlights?: string[] | null
+          created_at?: string
+          review_notes?: string | null
         }
         Update: {
           id?: string
-          title?: string
-          description?: string | null
+          organizer_id?: string | null
+          event_name?: string
+          organizer_name?: string
+          category?: string
+          event_type?: string
           event_date?: string
           start_time?: string | null
           end_time?: string | null
+          registration_opens?: string | null
+          registration_deadline?: string | null
           city?: string
-          category?: string
-          event_type?: string
-          location_details?: string | null
+          venue_location?: string
+          description?: string
           registration_url?: string | null
-          organizer_name?: string
-          is_verified?: boolean
-          status?: string
-          submitted_by_user_id?: string | null
-          fee?: string | null
-          eligibility?: string | null
-          team_size?: string | null
-          prizes?: string | null
-          certificate?: boolean | null
-          reg_deadline?: string | null
-          tags?: string[] | null
-          mode?: string | null
+          website_social?: string | null
+          fee?: string
+          status?: string | null
+          audience?: string[] | null
+          level?: string[] | null
+          highlights?: string[] | null
+          created_at?: string
+          review_notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      profiles: {
+        Row: {
+          id: string
+          email: string | null
+          role: string | null
+          created_at: string | null
+          updated_at: string | null
+          full_name: string | null
+          primary_city: string | null
+          avatar_url: string | null
+        }
+        Insert: {
+          id: string
+          email?: string | null
+          role?: string | null
           created_at?: string | null
+          updated_at?: string | null
+          full_name?: string | null
+          primary_city?: string | null
+          avatar_url?: string | null
+        }
+        Update: {
+          id?: string
+          email?: string | null
+          role?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          full_name?: string | null
+          primary_city?: string | null
+          avatar_url?: string | null
         }
         Relationships: []
       }

@@ -228,16 +228,16 @@ export default function SavedEventsPage() {
         ) : (
           <>
             {/* Header */}
-            <div className="flex items-start justify-between mb-6">
-              <div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6">
+              <div className="w-full sm:w-auto">
                 <h1 className="text-xl font-bold text-slate-900">
                   Saved Events{totalCount > 0 ? ` (${totalCount})` : ""}
                 </h1>
                 <p className="text-xs text-slate-500 mt-1">Manage your bookmarked events</p>
               </div>
               <Link
-                href="/dashboard"
-                className="text-xs font-medium text-[#186BA7] hover:underline flex items-center gap-1 mt-1"
+                href="/dashboard?tab=saved"
+                className="text-sm font-medium text-[#186BA7] hover:underline flex items-center gap-1 sm:ml-auto mt-1 sm:mt-0 w-fit"
               >
                 &larr; Back to Dashboard
               </Link>

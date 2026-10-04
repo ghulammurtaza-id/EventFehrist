@@ -193,30 +193,42 @@ export default function SubmitEventPage() {
     }
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      const allTags = [...audience, ...level, ...highlights];
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        setErrorMessage("You must be logged in to submit an event. Please sign in and try again.");
+        setIsLoading(false);
+        return;
+      }
+
+      const audienceArray = audience;
+      const levelArray = level;
+      const highlightsArray = highlights;
 
       const { error } = await supabase.from("events").insert([
         {
-          title: form.title,
+          organizer_id: user.id,
+          event_name: form.title,
           organizer_name: form.organizer_name,
           category: form.category,
           event_type: form.event_type,
           event_date: form.event_date,
           start_time: form.start_time || null,
           end_time: form.end_time || null,
-          reg_deadline: form.reg_deadline || null,
+          registration_opens: form.reg_opens || null,
+          registration_deadline: form.reg_deadline || null,
           city: form.city,
-          location_details: form.location_details || null,
-          description: form.description || null,
+          venue_location: form.location_details || form.city || "Venue TBD",
+          description: form.description,
           registration_url: form.registration_url || null,
-          fee: form.fee || null,
-          tags: allTags.length > 0 ? allTags : null,
-          certificate: highlights.includes("Certificate"),
-          prizes: highlights.includes("With Prizes") ? "With Prizes" : null,
-          status: "pending",
-          is_verified: false,
-          submitted_by_user_id: user?.id || null,
+          website_social: form.website || null,
+          fee: form.fee || "Free",
+          status: "Pending",
+          audience: audienceArray.length > 0 ? audienceArray : null,
+          level: levelArray.length > 0 ? levelArray : null,
+          highlights: highlightsArray.length > 0 ? highlightsArray : null,
         },
       ]);
 
