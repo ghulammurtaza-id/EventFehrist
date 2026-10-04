@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 const audienceOptions = [
   "Open to All",
   "Students",
@@ -66,27 +64,27 @@ function CheckboxItem({
   );
 }
 
-export default function Sidebar() {
-  const [audience, setAudience] = useState<string[]>([]);
-  const [level, setLevel] = useState<string[]>([]);
-  const [highlights, setHighlights] = useState<string[]>([]);
+export interface SidebarFilters {
+  audience: string[];
+  level: string[];
+  highlights: string[];
+}
 
-  function toggleAudience(val: string) {
-    setAudience((prev) =>
-      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
-    );
-  }
+interface SidebarProps {
+  filters: SidebarFilters;
+  onFiltersChange: (filters: SidebarFilters) => void;
+}
 
-  function toggleLevel(val: string) {
-    setLevel((prev) =>
-      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
-    );
-  }
-
-  function toggleHighlights(val: string) {
-    setHighlights((prev) =>
-      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
-    );
+export default function Sidebar({ filters, onFiltersChange }: SidebarProps) {
+  function toggleItem(
+    key: keyof SidebarFilters,
+    val: string
+  ) {
+    const current = filters[key];
+    const updated = current.includes(val)
+      ? current.filter((v) => v !== val)
+      : [...current, val];
+    onFiltersChange({ ...filters, [key]: updated });
   }
 
   return (
@@ -101,8 +99,8 @@ export default function Sidebar() {
             <CheckboxItem
               key={opt}
               label={opt}
-              checked={audience.includes(opt)}
-              onChange={() => toggleAudience(opt)}
+              checked={filters.audience.includes(opt)}
+              onChange={() => toggleItem("audience", opt)}
             />
           ))}
         </div>
@@ -118,8 +116,8 @@ export default function Sidebar() {
             <CheckboxItem
               key={opt}
               label={opt}
-              checked={level.includes(opt)}
-              onChange={() => toggleLevel(opt)}
+              checked={filters.level.includes(opt)}
+              onChange={() => toggleItem("level", opt)}
             />
           ))}
         </div>
@@ -135,8 +133,8 @@ export default function Sidebar() {
             <CheckboxItem
               key={opt}
               label={opt}
-              checked={highlights.includes(opt)}
-              onChange={() => toggleHighlights(opt)}
+              checked={filters.highlights.includes(opt)}
+              onChange={() => toggleItem("highlights", opt)}
             />
           ))}
         </div>

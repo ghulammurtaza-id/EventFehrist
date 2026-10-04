@@ -28,6 +28,11 @@ function formatDate(dateStr: string): string {
   return d.toLocaleDateString("en-PK", { month: "short", day: "numeric" });
 }
 
+// Strips seconds from "HH:MM:SS" → "HH:MM"
+function trimTime(t: string): string {
+  return t ? t.substring(0, 5) : "";
+}
+
 function StatusBadge({ status }: { status: string }) {
   let textColor = "text-slate-600 dark:text-slate-300";
   if (status === "Registration Open") {
@@ -177,7 +182,7 @@ export default function EventsTable({
                     {formatDate(event.event_date)}
                   </div>
                   <div className="text-[10px] md:text-[11px] text-slate-400 dark:text-slate-400 whitespace-nowrap">
-                    {event.start_time}–{event.end_time}
+                    {trimTime(event.start_time)} – {trimTime(event.end_time)}
                   </div>
                 </td>
 

@@ -245,6 +245,7 @@ export default function CityCombobox({
         >
           <span className="truncate font-medium">{value}</span>
           <svg
+            suppressHydrationWarning
             className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-150 ${open ? "rotate-180" : ""}`}
             viewBox="0 0 20 20"
             fill="currentColor"

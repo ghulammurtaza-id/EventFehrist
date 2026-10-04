@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { Heart, ExternalLink, Share2, Flag } from "lucide-react";
 import { Event, getEventUIStatus } from "@/lib/mockData";
+import { supabase } from "@/lib/supabaseClient";
 
 interface EventDetailsModalProps {
   event: Event;
@@ -14,6 +17,11 @@ interface EventDetailsModalProps {
 function formatDateLong(dateStr: string): string {
   const d = new Date(`${dateStr}T00:00:00`);
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + " (PKT)";
+}
+
+// Strips seconds from "HH:MM:SS" → "HH:MM"
+function trimTime(t: string): string {
+  return t ? t.substring(0, 5) : "";
 }
 
 function getEventMode(event: Event): "Physical" | "Online" | "Hybrid" {
@@ -57,9 +65,62 @@ function deriveExtras(event: Event) {
 // ── main modal ────────────────────────────────────────────────────────────────
 
 export default function EventDetailsModal({ event, todayISO, onClose }: EventDetailsModalProps) {
+  const router = useRouter();
   const uiStatus = getEventUIStatus(event, todayISO);
   const mode = getEventMode(event);
   const { fee, isFree, tags, eligibility, teamSize, prizes, hasCert, regDeadline } = deriveExtras(event);
+
+  // ── Save state ───────────────────────────────────────────────────────────────
+  const [isSaved, setIsSaved] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  // Check on mount whether this event is already saved by the current user
+  useEffect(() => {
+    let cancelled = false;
+    async function checkSaved() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || cancelled) return;
+      const { data } = await supabase
+        .from("saved_events")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("event_id", event.id)
+        .maybeSingle();
+      if (!cancelled) setIsSaved(!!data);
+    }
+    checkSaved();
+    return () => { cancelled = true; };
+  }, [event.id]);
+
+  const handleSave = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { router.push("/login"); return; }
+    setSaveLoading(true);
+    try {
+      if (isSaved) {
+        await supabase
+          .from("saved_events")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("event_id", event.id);
+        setIsSaved(false);
+      } else {
+        await supabase
+          .from("saved_events")
+          .insert({ user_id: user.id, event_id: event.id });
+        setIsSaved(true);
+      }
+    } finally {
+      setSaveLoading(false);
+    }
+  }, [isSaved, event.id, router]);
+
+  const handleShare = useCallback(() => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, []);
 
   // Lock body scroll & handle Escape key
   useEffect(() => {
@@ -79,8 +140,9 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
     uiStatus === "Cancelled" ? "text-red-500" :
     "text-slate-600";
 
-  const buttonClasses =
-    "px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-slate-600 bg-gray-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:bg-gray-200 dark:hover:bg-slate-700 hover:border-gray-400 dark:hover:border-slate-500 active:bg-gray-300 dark:active:bg-slate-600 active:scale-[0.98] transition-all duration-150 ease-in-out rounded-none cursor-pointer inline-flex items-center gap-1.5";
+  // Shared base classes matching the app design system
+  const btnBase =
+    "px-4 py-2 text-sm font-medium border rounded-sm bg-white text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed";
 
   return (
     <div
@@ -156,7 +218,7 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
                 Time
               </div>
               <div className="px-3.5 py-2.5 text-sm text-slate-900 bg-white flex items-center">
-                {event.start_time} – {event.end_time}
+                {trimTime(event.start_time)} – {trimTime(event.end_time)}
               </div>
             </div>
 
@@ -278,39 +340,54 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
 
         {/* ── Footer actions ────────────────────────────────────────────────────── */}
         <div className="shrink-0 px-6 py-4 border-t border-slate-200 bg-white flex items-center gap-2 flex-wrap">
+
+          {/* Register Now */}
           <a
-            href={event.registration_url}
+            href={event.registration_url || "#"}
             target="_blank"
             rel="noopener noreferrer"
-            className={buttonClasses}
+            className={`${btnBase} border-slate-300`}
           >
             Register Now
-            <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" className="shrink-0">
-              <path fillRule="evenodd" d="M5.22 14.78a.75.75 0 0 0 1.06 0l7.22-7.22v5.69a.75.75 0 0 0 1.5 0v-7.5a.75.75 0 0 0-.75-.75h-7.5a.75.75 0 0 0 0 1.5h5.69L5.22 13.72a.75.75 0 0 0 0 1.06Z" clipRule="evenodd" />
-            </svg>
+            <ExternalLink className="w-3.5 h-3.5" />
           </a>
 
+          {/* Save / Saved */}
           <button
             type="button"
-            className={buttonClasses}
+            onClick={handleSave}
+            disabled={saveLoading}
+            className={`${btnBase} ${
+              isSaved
+                ? "border-[#186BA7] text-[#186BA7]"
+                : "border-slate-300"
+            }`}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-            Save
+            <Heart
+              className={`w-4 h-4 ${
+                isSaved ? "fill-current" : ""
+              }`}
+            />
+            {saveLoading ? "Saving..." : isSaved ? "Saved" : "Save"}
           </button>
 
+          {/* Share */}
           <button
             type="button"
-            className={buttonClasses}
+            onClick={handleShare}
+            className={`${btnBase} border-slate-300`}
           >
-            Share
+            <Share2 className="w-4 h-4" />
+            {copied ? "Copied!" : "Share"}
           </button>
 
+          {/* Report */}
           <button
             type="button"
-            className={buttonClasses}
+            onClick={() => alert("Thank you. We will review this event.")}
+            className={`${btnBase} border-slate-300`}
           >
+            <Flag className="w-4 h-4" />
             Report
           </button>
         </div>

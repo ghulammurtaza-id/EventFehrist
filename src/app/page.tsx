@@ -1,17 +1,19 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
-  approvedEvents,
   EVENT_TYPES,
   type Event,
   type EventCategory,
+  getEventUIStatus,
 } from "@/lib/mockData";
+import { supabase } from "@/lib/supabaseClient";
+import type { Database } from "@/lib/supabaseClient";
 import Navbar from "@/components/Navbar";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import Footer from "@/components/Footer";
-import Sidebar from "@/components/Sidebar";
+import Sidebar, { type SidebarFilters } from "@/components/Sidebar";
 import EventsTable from "@/components/EventsTable";
 import CityCombobox from "@/components/CityCombobox";
 import EventDetailsModal from "@/components/EventDetailsModal";
@@ -20,6 +22,55 @@ import EventDetailsModal from "@/components/EventDetailsModal";
 // Evaluated once at module level to avoid hydration mismatch.
 const TODAY_ISO = new Date().toISOString().split("T")[0];
 
+// DB row type alias
+type DbEvent = Database["public"]["Tables"]["events"]["Row"];
+
+// Map a Supabase DB row to the Event type used by EventsTable / EventDetailsModal
+function mapDbRow(row: DbEvent): Event {
+  // Derive mode from highlights or venue_location
+  let mode: "Physical" | "Online" | "Hybrid" = "Physical";
+  const venue = (row.venue_location || "").toLowerCase();
+  const highlights = row.highlights || [];
+  if (
+    row.event_type === "Webinar" ||
+    venue.includes("zoom") ||
+    venue.includes("online") ||
+    highlights.some((h) => h.toLowerCase().includes("online"))
+  ) {
+    mode = "Online";
+  } else if (
+    venue.includes("hybrid") ||
+    highlights.some((h) => h.toLowerCase().includes("hybrid"))
+  ) {
+    mode = "Hybrid";
+  }
+
+  return {
+    id: row.id,
+    title: row.event_name,
+    description: row.description,
+    event_date: row.event_date,
+    start_time: row.start_time || "",
+    end_time: row.end_time || "",
+    city: row.city,
+    category: row.category as EventCategory,
+    event_type: row.event_type as Event["event_type"],
+    location_details: row.venue_location,
+    registration_url: row.registration_url || "",
+    organizer_name: row.organizer_name,
+    is_verified: false, // not in DB schema
+    status: "approved", // only approved events are fetched
+    submitted_by_user_id: row.organizer_id || "",
+    fee: row.fee || "Free",
+    eligibility: undefined,
+    team_size: undefined,
+    prizes: undefined,
+    certificate: highlights.some((h) => h.toLowerCase().includes("certificate")),
+    reg_deadline: row.registration_deadline || undefined,
+    tags: row.highlights || [],
+    mode,
+  };
+}
 
 // Category pills shown in the filter row
 const CATEGORY_PILLS: (EventCategory | "All")[] = [
@@ -46,7 +97,15 @@ function addDays(iso: string, n: number): string {
   return d.toISOString().split("T")[0];
 }
 
+// Sidebar defaults
+const DEFAULT_SIDEBAR: SidebarFilters = { audience: [], level: [], highlights: [] };
+
 export default function HomePage() {
+  // ── Data state ────────────────────────────────────────────────────────────────
+  const [allEvents, setAllEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
   // ── UI state ────────────────────────────────────────────────────────────────
   const [showAnnouncement, setShowAnnouncement] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -58,10 +117,38 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<EventCategory | "All">("All");
   const [selectedDate, setSelectedDate] = useState<DateFilter>("All");
   const [selectedType, setSelectedType] = useState<string>("All Types");
+  const [selectedPrice, setSelectedPrice] = useState<string>("Any Price");
+  const [selectedMode, setSelectedMode] = useState<string>("Any Mode");
+  const [sidebarFilters, setSidebarFilters] = useState<SidebarFilters>(DEFAULT_SIDEBAR);
 
   // ── Pagination ───────────────────────────────────────────────────────────────
   const [currentPage, setCurrentPage] = useState(1);
   const EVENTS_PER_PAGE_COUNT = 10;
+
+  // ── Fetch from Supabase ───────────────────────────────────────────────────────
+  const fetchEvents = useCallback(async () => {
+    setLoading(true);
+    setFetchError(null);
+    try {
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .eq("status", "Approved")
+        .order("event_date", { ascending: true });
+
+      if (error) throw error;
+      setAllEvents((data || []).map(mapDbRow));
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to load events.";
+      setFetchError(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
 
   // ── Derived: filtered events ─────────────────────────────────────────────────
   const filteredEvents = useMemo(() => {
@@ -69,7 +156,7 @@ export default function HomePage() {
     const weekEnd = addDays(TODAY_ISO, 7);
     const monthEnd = addDays(TODAY_ISO, 30);
 
-    return approvedEvents.filter((event) => {
+    return allEvents.filter((event) => {
       // City filter
       if (selectedCity !== "All Cities" && event.city !== selectedCity) return false;
 
@@ -79,10 +166,63 @@ export default function HomePage() {
       // Event type filter
       if (selectedType !== "All Types" && event.event_type !== selectedType) return false;
 
+      // Price filter
+      if (selectedPrice === "Free") {
+        const fee = event.fee || "";
+        const isFree = !fee || fee.toLowerCase() === "free" || fee === "0";
+        if (!isFree) return false;
+      } else if (selectedPrice === "Paid") {
+        const fee = event.fee || "";
+        const isFree = !fee || fee.toLowerCase() === "free" || fee === "0";
+        if (isFree) return false;
+      }
+
+      // Mode filter
+      if (selectedMode !== "Any Mode" && event.mode !== selectedMode) return false;
+
       // Date filter
       if (selectedDate === "Today" && event.event_date !== todayStart) return false;
-      if (selectedDate === "This Week" && (event.event_date < todayStart || event.event_date > weekEnd)) return false;
-      if (selectedDate === "This Month" && (event.event_date < todayStart || event.event_date > monthEnd)) return false;
+      if (
+        selectedDate === "This Week" &&
+        (event.event_date < todayStart || event.event_date > weekEnd)
+      )
+        return false;
+      if (
+        selectedDate === "This Month" &&
+        (event.event_date < todayStart || event.event_date > monthEnd)
+      )
+        return false;
+
+      // Sidebar: Audience filter
+      // The DB stores audience as an array in the `audience` column (mapped to tags for now)
+      // We filter if any selected audience value matches the event tags
+      if (sidebarFilters.audience.length > 0) {
+        const eventAudience = (event.tags || []).map((t) => t.toLowerCase());
+        const matches = sidebarFilters.audience.some((a) =>
+          eventAudience.some((ea) => ea.includes(a.toLowerCase()))
+        );
+        if (!matches) return false;
+      }
+
+      // Sidebar: Level filter
+      if (sidebarFilters.level.length > 0) {
+        const eventTags = (event.tags || []).map((t) => t.toLowerCase());
+        const matches = sidebarFilters.level.some((l) =>
+          eventTags.some((et) => et.includes(l.toLowerCase()))
+        );
+        if (!matches) return false;
+      }
+
+      // Sidebar: Highlights filter
+      if (sidebarFilters.highlights.length > 0) {
+        const eventTags = (event.tags || []).map((t) => t.toLowerCase());
+        const hasCert = event.certificate;
+        const matches = sidebarFilters.highlights.some((h) => {
+          if (h === "Certificate") return hasCert;
+          return eventTags.some((et) => et.includes(h.toLowerCase()));
+        });
+        if (!matches) return false;
+      }
 
       // Search
       if (searchQuery.trim()) {
@@ -97,14 +237,23 @@ export default function HomePage() {
 
       return true;
     });
-  }, [selectedCity, selectedCategory, selectedDate, selectedType, searchQuery]);
+  }, [
+    allEvents,
+    selectedCity,
+    selectedCategory,
+    selectedDate,
+    selectedType,
+    selectedPrice,
+    selectedMode,
+    sidebarFilters,
+    searchQuery,
+  ]);
 
   // ── Derived: paginated slice ─────────────────────────────────────────────────
   const totalPages = Math.max(1, Math.ceil(filteredEvents.length / EVENTS_PER_PAGE_COUNT));
   const safePage = Math.min(currentPage, totalPages);
   const startIndex = (safePage - 1) * EVENTS_PER_PAGE_COUNT;
   const paginatedEvents = filteredEvents.slice(startIndex, startIndex + EVENTS_PER_PAGE_COUNT);
-
 
   // City label
   const cityLabel =
@@ -116,6 +265,9 @@ export default function HomePage() {
     setSelectedCategory("All");
     setSelectedDate("All");
     setSelectedType("All Types");
+    setSelectedPrice("Any Price");
+    setSelectedMode("Any Mode");
+    setSidebarFilters(DEFAULT_SIDEBAR);
     setCurrentPage(1);
   }
 
@@ -219,6 +371,11 @@ export default function HomePage() {
             </select>
 
             <select
+              value={selectedPrice}
+              onChange={(e) => {
+                setSelectedPrice(e.target.value);
+                setCurrentPage(1);
+              }}
               className="text-sm border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-800 px-2.5 py-2 outline-none focus:border-[#186BA7] dark:focus:border-[#60a5fa] cursor-pointer text-slate-700 dark:text-slate-200"
               style={{ borderRadius: 0 }}
             >
@@ -228,6 +385,11 @@ export default function HomePage() {
             </select>
 
             <select
+              value={selectedMode}
+              onChange={(e) => {
+                setSelectedMode(e.target.value);
+                setCurrentPage(1);
+              }}
               className="text-sm border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-800 px-2.5 py-2 outline-none focus:border-[#186BA7] dark:focus:border-[#60a5fa] cursor-pointer text-slate-700 dark:text-slate-200"
               style={{ borderRadius: 0 }}
             >
@@ -236,12 +398,6 @@ export default function HomePage() {
               <option>Online</option>
               <option>Hybrid</option>
             </select>
-
-            <button
-              className="px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-slate-600 bg-gray-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:bg-gray-200 dark:hover:bg-slate-700 hover:border-gray-400 dark:hover:border-slate-500 active:bg-gray-300 dark:active:bg-slate-600 active:scale-[0.98] transition-all duration-150 ease-in-out rounded-none cursor-pointer"
-            >
-              Filter
-            </button>
 
             <button
               onClick={resetFilters}
@@ -311,7 +467,7 @@ export default function HomePage() {
 
           {mobileSidebarOpen && (
             <div className="mt-3">
-              <Sidebar />
+              <Sidebar filters={sidebarFilters} onFiltersChange={(f) => { setSidebarFilters(f); setCurrentPage(1); }} />
             </div>
           )}
         </div>
@@ -321,41 +477,64 @@ export default function HomePage() {
 
           {/* Left Sidebar — desktop only */}
           <aside className="hidden md:block w-[240px] flex-shrink-0">
-            <Sidebar />
+            <Sidebar filters={sidebarFilters} onFiltersChange={(f) => { setSidebarFilters(f); setCurrentPage(1); }} />
           </aside>
 
           {/* Right: Event count + Table + Pagination */}
           <div className="flex-1 min-w-0">
-            {/* Showing N events */}
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-2.5">
-              Showing{" "}
-              <span className="font-semibold text-slate-800 dark:text-slate-100">
-                {paginatedEvents.length}
-              </span>{" "}
-              events
-              {filteredEvents.length > EVENTS_PER_PAGE_COUNT && (
-                <span className="text-slate-400 dark:text-slate-500">
-                  {" "}
-                  (of {filteredEvents.length} total)
-                </span>
-              )}
-            </p>
+            {/* Loading / Error states */}
+            {loading && (
+              <div className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151d2e] py-16 text-center rounded-t-md">
+                <p className="text-slate-400 dark:text-slate-300 text-sm font-medium">Loading events…</p>
+              </div>
+            )}
 
-            {/* Data Table */}
-            <EventsTable
-              events={paginatedEvents}
-              todayISO={TODAY_ISO}
-              startIndex={startIndex}
-              onEventClick={setSelectedEvent}
-            />
+            {!loading && fetchError && (
+              <div className="border border-red-200 bg-red-50 dark:bg-red-900/20 py-8 px-4 text-center rounded-t-md">
+                <p className="text-red-600 dark:text-red-400 text-sm font-medium">{fetchError}</p>
+                <button
+                  onClick={fetchEvents}
+                  className="mt-3 text-xs text-red-500 underline hover:no-underline"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
 
-            {/* ── Pagination ─────────────────────────────────────────────────── */}
-            {filteredEvents.length > EVENTS_PER_PAGE_COUNT && (
-              <Pagination
-                currentPage={safePage}
-                totalPages={totalPages}
-                onPageChange={goToPage}
-              />
+            {!loading && !fetchError && (
+              <>
+                {/* Showing N events */}
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-2.5">
+                  Showing{" "}
+                  <span className="font-semibold text-slate-800 dark:text-slate-100">
+                    {paginatedEvents.length}
+                  </span>{" "}
+                  events
+                  {filteredEvents.length > EVENTS_PER_PAGE_COUNT && (
+                    <span className="text-slate-400 dark:text-slate-500">
+                      {" "}
+                      (of {filteredEvents.length} total)
+                    </span>
+                  )}
+                </p>
+
+                {/* Data Table */}
+                <EventsTable
+                  events={paginatedEvents}
+                  todayISO={TODAY_ISO}
+                  startIndex={startIndex}
+                  onEventClick={setSelectedEvent}
+                />
+
+                {/* ── Pagination ─────────────────────────────────────────────────── */}
+                {filteredEvents.length > EVENTS_PER_PAGE_COUNT && (
+                  <Pagination
+                    currentPage={safePage}
+                    totalPages={totalPages}
+                    onPageChange={goToPage}
+                  />
+                )}
+              </>
             )}
           </div>
         </div>
