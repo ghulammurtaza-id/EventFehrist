@@ -208,7 +208,7 @@ export default function DashboardPage() {
             </div>
 
             {/* ── Navigation Tabs ──────────────────────────────────────────── */}
-            <div className="flex flex-col sm:flex-row gap-2 mb-6">
+            <div className="flex flex-row w-full gap-2 mb-6">
               {(["Saved Events", "My Submissions", "Settings"] as const).map(
                 (tab) => {
                   const isActive = activeTab === tab;
@@ -217,12 +217,20 @@ export default function DashboardPage() {
                       key={tab}
                       type="button"
                       onClick={() => setActiveTab(tab)}
-                      className={`w-full sm:w-auto text-center px-4 py-2 text-sm rounded-none transition-colors duration-200 cursor-pointer border ${isActive
+                      className={`flex-1 sm:flex-initial text-center px-2 py-2 sm:px-4 text-xs sm:text-sm rounded-none transition-colors duration-200 cursor-pointer border ${
+                        isActive
                           ? "bg-slate-100 text-slate-900 border-slate-400 font-semibold"
                           : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50 hover:text-slate-900 font-medium"
-                        }`}
+                      }`}
                     >
-                      {tab}
+                      {tab === "My Submissions" ? (
+                        <>
+                          <span className="hidden sm:inline">My Submissions</span>
+                          <span className="sm:hidden">Submissions</span>
+                        </>
+                      ) : (
+                        tab
+                      )}
                     </button>
                   );
                 }
