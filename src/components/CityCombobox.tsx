@@ -149,12 +149,22 @@ export const ALL_CITIES = [
 ];
 
 interface CityComboboxProps {
-  value: string;
-  onChange: (city: string) => void;
+  value?: string;
+  onChange?: (city: string) => void;
+  selectedCity?: string;
+  onCityChange?: (city: string) => void;
   className?: string;
 }
 
-export default function CityCombobox({ value, onChange, className }: CityComboboxProps) {
+export default function CityCombobox({
+  value: propsValue,
+  onChange: propsOnChange,
+  selectedCity,
+  onCityChange,
+  className,
+}: CityComboboxProps) {
+  const value = propsValue ?? selectedCity ?? "";
+  const onChange = propsOnChange ?? onCityChange ?? (() => {});
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
