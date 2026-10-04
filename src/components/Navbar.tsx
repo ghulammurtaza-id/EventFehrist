@@ -55,7 +55,6 @@ export default function Navbar() {
     setIsOpen(false);
     await supabase.auth.signOut();
     router.refresh();
-    setUser(null);
     router.push("/");
   };
 
@@ -66,7 +65,7 @@ export default function Navbar() {
     <nav style={{ backgroundColor: "#292929" }} className="relative z-50 w-full border-b border-[#3a3a3a]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-13 py-2.5">
-          <Link href="/" className="flex-shrink-0 flex items-center">
+          <Link href="/" prefetch={false} className="flex-shrink-0 flex items-center cursor-pointer">
             <Image
               src="/logo.png"
               alt="fehrist"
@@ -151,7 +150,8 @@ export default function Navbar() {
             ) : (
               <Link
                 href="/login"
-                className="text-xs sm:text-sm text-slate-300 hover:text-white transition-colors"
+                prefetch={false}
+                className="text-xs sm:text-sm text-slate-300 hover:text-white transition-colors cursor-pointer"
               >
                 Login
               </Link>
