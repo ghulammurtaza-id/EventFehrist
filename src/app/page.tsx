@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef, Suspense } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   EVENT_TYPES,
@@ -106,7 +107,12 @@ function addDays(iso: string, n: number): string {
 // Sidebar defaults
 const DEFAULT_SIDEBAR: SidebarFilters = { audience: [], level: [], highlights: [] };
 
-export default function HomePage() {
+// ── Inner component (needs Suspense because it calls useSearchParams) ────────
+function HomePageInner() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   // ── Data state ────────────────────────────────────────────────────────────────
   const [allEvents, setAllEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -116,6 +122,8 @@ export default function HomePage() {
   const [showAnnouncement, setShowAnnouncement] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  // Toast shown when a deep-linked event ID is not found in the data
+  const [eventNotFoundToast, setEventNotFoundToast] = useState(false);
 
   // ── Filter state ─────────────────────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState("");
@@ -130,6 +138,21 @@ export default function HomePage() {
   // ── Pagination ───────────────────────────────────────────────────────────────
   const [currentPage, setCurrentPage] = useState(1);
   const EVENTS_PER_PAGE_COUNT = 10;
+  const listContainerRef = useRef<HTMLDivElement>(null);
+  const isFirstMount = useRef(true);
+  // Track whether we've already tried to open the deep-linked event
+  const deepLinkHandled = useRef(false);
+
+  // Smooth scroll to top of list when page changes
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    if (listContainerRef.current) {
+      listContainerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [currentPage]);
 
   // ── Fetch from Supabase ───────────────────────────────────────────────────────
   const fetchEvents = useCallback(async () => {
@@ -155,6 +178,26 @@ export default function HomePage() {
   useEffect(() => {
     fetchEvents();
   }, [fetchEvents]);
+
+  // ── Deep-link: open modal from ?event=<id> on first data load ────────────────
+  useEffect(() => {
+    if (loading || allEvents.length === 0 || deepLinkHandled.current) return;
+    const eventId = searchParams.get("event");
+    if (!eventId) return;
+    deepLinkHandled.current = true;
+    const found = allEvents.find((e) => e.id === eventId);
+    if (found) {
+      setSelectedEvent(found);
+    } else {
+      // Event was deleted or doesn't exist — clear the param and show toast
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("event");
+      const qs = params.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+      setEventNotFoundToast(true);
+      setTimeout(() => setEventNotFoundToast(false), 4000);
+    }
+  }, [loading, allEvents, searchParams, pathname, router]);
 
   // ── Derived: filtered events ─────────────────────────────────────────────────
   const filteredEvents = useMemo(() => {
@@ -297,6 +340,22 @@ export default function HomePage() {
     setCurrentPage(clamped);
   }
 
+  // ── Event open/close with URL sync ───────────────────────────────────────────
+  function openEvent(event: Event) {
+    setSelectedEvent(event);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("event", event.id);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  }
+
+  function closeEvent() {
+    setSelectedEvent(null);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("event");
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-[#0b1120] text-slate-900 dark:text-slate-100 transition-colors">
       {/* ── Navbar ───────────────────────────────────────────────────────────── */}
@@ -393,7 +452,7 @@ export default function HomePage() {
 
             <button
               onClick={resetFilters}
-              className="px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-slate-600 bg-gray-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:bg-gray-200 dark:hover:bg-slate-700 hover:border-gray-400 dark:hover:border-slate-500 active:bg-gray-300 dark:active:bg-slate-600 active:scale-[0.98] transition-all duration-150 ease-in-out rounded-none cursor-pointer h-10 w-full sm:w-[160px] flex items-center justify-center"
+              className="px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-slate-600 bg-gray-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:bg-gray-200 dark:hover:bg-slate-700 hover:border-gray-400 dark:hover:border-slate-500 active:bg-gray-300 dark:active:bg-slate-600 active:scale-[0.98] transition-all duration-150 ease-in-out rounded-sm cursor-pointer h-10 w-full sm:w-[160px] flex items-center justify-center"
             >
               Reset
             </button>
@@ -494,7 +553,7 @@ export default function HomePage() {
             )}
 
             {!loading && !fetchError && (
-              <>
+              <div ref={listContainerRef} className="scroll-mt-4">
                 {/* Showing N events */}
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-2.5">
                   Showing{" "}
@@ -515,7 +574,7 @@ export default function HomePage() {
                   events={paginatedEvents}
                   todayISO={TODAY_ISO}
                   startIndex={startIndex}
-                  onEventClick={setSelectedEvent}
+                  onEventClick={openEvent}
                 />
 
                 {/* ── Pagination ─────────────────────────────────────────────────── */}
@@ -526,7 +585,7 @@ export default function HomePage() {
                     onPageChange={goToPage}
                   />
                 )}
-              </>
+              </div>
             )}
           </div>
         </div>
@@ -537,13 +596,37 @@ export default function HomePage() {
         <EventDetailsModal
           event={selectedEvent}
           todayISO={TODAY_ISO}
-          onClose={() => setSelectedEvent(null)}
+          onClose={closeEvent}
         />
+      )}
+
+      {/* ── Event Not Found Toast ───────────────────────────────────────────── */}
+      {eventNotFoundToast && (
+        <div
+          role="alert"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-2 bg-slate-800 dark:bg-slate-700 text-white text-sm px-5 py-3 rounded-md shadow-lg animate-fade-in"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-amber-400">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          This event is no longer available or may have been removed.
+        </div>
       )}
 
       {/* ── Footer ───────────────────────────────────────────────────────────── */}
       <Footer />
     </div>
+  );
+}
+
+// ── Page export — wraps inner component in Suspense (required for useSearchParams) ─
+export default function HomePage() {
+  return (
+    <Suspense fallback={null}>
+      <HomePageInner />
+    </Suspense>
   );
 }
 

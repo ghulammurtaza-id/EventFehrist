@@ -6,18 +6,64 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabaseClient";
+import type { Database } from "@/lib/supabaseClient";
 import type { User } from "@supabase/supabase-js";
+import type { Event, EventCategory } from "@/lib/mockData";
+import EventDetailsModal from "@/components/EventDetailsModal";
+
+const TODAY_ISO = new Date().toISOString().split("T")[0];
+
+type DbEvent = Database["public"]["Tables"]["events"]["Row"];
+
+function mapDbRow(row: Partial<DbEvent> & { id: string; event_name: string }): Event {
+  let mode: "Physical" | "Online" | "Hybrid" = "Physical";
+  const venue = (row.venue_location || "").toLowerCase();
+  const highlights = row.highlights || [];
+  if (
+    row.event_type === "Webinar" ||
+    venue.includes("zoom") ||
+    venue.includes("online") ||
+    highlights.some((h) => h.toLowerCase().includes("online"))
+  ) {
+    mode = "Online";
+  } else if (
+    venue.includes("hybrid") ||
+    highlights.some((h) => h.toLowerCase().includes("hybrid"))
+  ) {
+    mode = "Hybrid";
+  }
+
+  return {
+    id: row.id,
+    title: row.event_name,
+    description: row.description || "",
+    event_date: row.event_date || "",
+    start_time: row.start_time || "",
+    end_time: row.end_time || "",
+    city: row.city || "Pakistan",
+    category: (row.category as EventCategory) || "Technology",
+    event_type: (row.event_type as Event["event_type"]) || "Conference",
+    location_details: row.venue_location || "",
+    registration_url: row.registration_url || "",
+    organizer_name: row.organizer_name || "Organizer",
+    is_verified: false,
+    status: "approved",
+    submitted_by_user_id: row.organizer_id || "",
+    fee: row.fee?.toLowerCase().trim() === "free" ? "Free" : (row.fee || "Free"),
+    eligibility: undefined,
+    team_size: undefined,
+    prizes: undefined,
+    certificate: highlights.some((h) => h.toLowerCase().includes("certificate")),
+    reg_deadline: row.registration_deadline || undefined,
+    tags: row.highlights || [],
+    mode,
+  };
+}
 
 interface SavedEventItem {
   id: string;
   event_id: string;
-  events?: {
-    id: string;
-    event_name: string;
-    event_date: string;
-    city: string;
-    organizer_name: string;
-  } | null;
+  events?: DbEvent | null;
 }
 
 const EVENTS_PER_PAGE = 10;
@@ -103,6 +149,7 @@ export default function SavedEventsPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [isLoadingEvents, setIsLoadingEvents] = useState(false);
   const [unsavingId, setUnsavingId] = useState<string | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(totalCount / EVENTS_PER_PAGE));
@@ -133,7 +180,7 @@ export default function SavedEventsPage() {
 
       const { data, error } = await supabase
         .from("saved_events")
-        .select("id, event_id, events (id, event_name, event_date, city, organizer_name)")
+        .select("id, event_id, events (*)")
         .eq("user_id", userId)
         .range(from, to);
 
@@ -154,6 +201,25 @@ export default function SavedEventsPage() {
       setIsLoadingEvents(false);
     }
   }, []);
+
+  const handleViewEvent = async (item: SavedEventItem) => {
+    if (item.events) {
+      setSelectedEvent(mapDbRow(item.events));
+    } else if (item.event_id) {
+      try {
+        const { data } = await supabase
+          .from("events")
+          .select("*")
+          .eq("id", item.event_id)
+          .single();
+        if (data) {
+          setSelectedEvent(mapDbRow(data as DbEvent));
+        }
+      } catch (err) {
+        console.error("Error fetching event details:", err);
+      }
+    }
+  };
 
   useEffect(() => {
     async function loadUser() {
@@ -313,21 +379,13 @@ export default function SavedEventsPage() {
                                 >
                                   {unsavingId === item.id ? "Unsaving..." : "Unsave"}
                                 </button>
-                                {eventId ? (
-                                  <Link
-                                    href={`/?event=${eventId}`}
-                                    className="px-2 py-1 sm:px-3 sm:py-1.5 text-xs font-medium border border-slate-300 rounded-sm bg-white hover:bg-slate-100 cursor-pointer transition-colors text-slate-900 inline-flex items-center justify-center"
-                                  >
-                                    View
-                                  </Link>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    className="px-2 py-1 sm:px-3 sm:py-1.5 text-xs font-medium border border-slate-300 rounded-sm bg-white hover:bg-slate-100 cursor-pointer transition-colors text-slate-900"
-                                  >
-                                    View
-                                  </button>
-                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleViewEvent(item)}
+                                  className="px-2 py-1 sm:px-3 sm:py-1.5 text-xs font-medium border border-slate-300 rounded-sm bg-white hover:bg-slate-100 cursor-pointer transition-colors text-slate-900 inline-flex items-center justify-center"
+                                >
+                                  View
+                                </button>
                               </div>
                             </td>
                           </tr>
@@ -350,6 +408,18 @@ export default function SavedEventsPage() {
           </>
         )}
       </main>
+
+      {/* ── Event Details Modal ────────────────────────────────────────────── */}
+      {selectedEvent && (
+        <EventDetailsModal
+          event={selectedEvent}
+          todayISO={TODAY_ISO}
+          onClose={() => {
+            setSelectedEvent(null);
+            if (user?.id) fetchSavedEvents(user.id, currentPage);
+          }}
+        />
+      )}
 
       <Footer />
     </div>
