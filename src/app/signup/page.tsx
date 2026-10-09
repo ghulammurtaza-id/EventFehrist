@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Inter } from "next/font/google";
+import { Mail } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabaseClient";
@@ -19,33 +20,32 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isExistingAccount, setIsExistingAccount] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
+  // Verification-pending state — set when data.user exists but data.session is null
+  const [isVerificationPending, setIsVerificationPending] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage("");
     setIsExistingAccount(false);
-    setSuccessMessage("");
+    setIsVerificationPending(false);
 
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: {
-            full_name: name,
-          },
-          // After email verification, land on onboarding (first-time only)
-          emailRedirectTo: window.location.origin + "/onboarding",
+          data: { full_name: name },
+          // ✅ Fix 1: Route through /auth/callback so exchangeCodeForSession runs
+          emailRedirectTo: window.location.origin + "/auth/callback",
         },
       });
 
-      // Detect if account already exists
+      // Detect if account already exists (identities array is empty on duplicate)
       const isAlreadyRegistered =
         error?.message?.toLowerCase().includes("already") ||
         error?.message?.toLowerCase().includes("exists") ||
-        !data?.user ||
         (data?.user?.identities && data.user.identities.length === 0);
 
       if (isAlreadyRegistered) {
@@ -63,7 +63,15 @@ export default function SignupPage() {
         return;
       }
 
-      setSuccessMessage("Account created! Please check your email to verify.");
+      // ✅ Fix 2: Explicit verification-pending check.
+      // data.user exists but data.session is null = email confirmation required.
+      if (data.user && !data.session) {
+        setVerificationEmail(data.user.email ?? email);
+        setIsVerificationPending(true);
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(false);
     } catch {
       setErrorMessage("An unexpected error occurred. Please try again.");
@@ -113,11 +121,35 @@ export default function SignupPage() {
             </div>
           )}
 
-          {/* Success Message */}
-          {successMessage ? (
-            <p className="text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-2.5 rounded-none" role="status">
-              {successMessage}
-            </p>
+          {/* ✅ Fix 3: Proper "Check your inbox" UI — shown when email confirmation is pending */}
+          {isVerificationPending ? (
+            <div className="text-center py-2">
+              {/* Mail icon */}
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 mb-5">
+                <Mail className="h-7 w-7 text-[#186BA7]" strokeWidth={1.75} />
+              </div>
+
+              <h2 className="text-xl font-bold text-slate-900 mb-2">
+                Check your inbox
+              </h2>
+
+              <p className="text-sm text-slate-500 mb-1 leading-relaxed">
+                We&apos;ve sent a verification link to
+              </p>
+              <p className="text-sm font-semibold text-slate-800 mb-6 break-all">
+                {verificationEmail}
+              </p>
+              <p className="text-sm text-slate-500 mb-6 leading-relaxed">
+                Click the link in that email to activate your account. Check your spam folder if you don&apos;t see it.
+              </p>
+
+              <Link
+                href="/login"
+                className="w-full flex justify-center py-2 px-4 text-sm font-semibold text-slate-900 bg-slate-200 hover:bg-slate-300 active:bg-slate-300 active:scale-[0.98] transition-all duration-150 ease-in-out rounded-sm"
+              >
+                Back to Login
+              </Link>
+            </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Full Name */}
