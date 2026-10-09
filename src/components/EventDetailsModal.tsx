@@ -37,8 +37,8 @@ function deriveExtras(event: Event) {
   const isFree = !event.fee || event.fee === "Free" || event.fee === "free";
   const fee = event.fee || (isFree ? "Free" : "Paid");
 
-  const tags: string[] = event.tags && event.tags.length > 0 
-    ? event.tags 
+  const tags: string[] = event.tags && event.tags.length > 0
+    ? event.tags
     : [event.category, event.event_type].filter(Boolean);
 
   const eligibility = event.eligibility || "University students";
@@ -135,10 +135,10 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
 
   const statusColor =
     uiStatus === "Registration Open" ? "text-[#3B853F]" :
-    uiStatus === "Happening Today" ? "text-[#9A3412]" :
-    uiStatus === "Completed" ? "text-slate-400" :
-    uiStatus === "Cancelled" ? "text-red-500" :
-    "text-slate-600";
+      uiStatus === "Happening Today" ? "text-[#9A3412]" :
+        uiStatus === "Completed" ? "text-slate-400" :
+          uiStatus === "Cancelled" ? "text-red-500" :
+            "text-slate-600";
 
   // Shared base classes matching the app design system
   const btnBase =
@@ -244,7 +244,7 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
               <div className="px-3.5 py-2.5 text-sm text-slate-600 font-medium bg-slate-50 border-r border-slate-200 flex items-center">
                 Fee
               </div>
-              <div className={`px-3.5 py-2.5 text-sm bg-white flex items-center font-medium ${isFree ? "text-[#3B853F]" : "text-slate-900"}`}>
+              <div className={`px-3.5 py-2.5 text-sm bg-white flex items-center font-medium ${isFree ? "text-[#3B853F]" : "text-[#DC2626]"}`}>
                 {fee}
               </div>
             </div>
@@ -357,16 +357,14 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
             type="button"
             onClick={handleSave}
             disabled={saveLoading}
-            className={`${btnBase} ${
-              isSaved
+            className={`${btnBase} ${isSaved
                 ? "border-[#186BA7] text-[#186BA7]"
                 : "border-slate-300"
-            }`}
+              }`}
           >
             <Heart
-              className={`w-4 h-4 ${
-                isSaved ? "fill-current" : ""
-              }`}
+              className={`w-4 h-4 ${isSaved ? "fill-current" : ""
+                }`}
             />
             {saveLoading ? "Saving..." : isSaved ? "Saved" : "Save"}
           </button>

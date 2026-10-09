@@ -111,22 +111,22 @@ export default function EventsTable({
             <th className="text-left px-2 py-2 md:px-3 md:py-2.5 text-[10px] md:text-[11px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell md:w-8">
               #
             </th>
-            <th className="text-left px-2 py-2 md:px-3 md:py-2.5 text-[10px] md:text-[11px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider w-auto min-w-[140px] md:min-w-0 md:w-full">
+            <th className="text-left px-2 py-2 md:px-3 md:py-2.5 text-[10px] md:text-[11px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider w-full min-w-0">
               Event
             </th>
             <th className="text-left px-2 py-2 md:px-3 md:py-2.5 text-[10px] md:text-[11px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell md:w-28">
               City
             </th>
-            <th className="text-left px-2 py-2 md:px-3 md:py-2.5 text-[10px] md:text-[11px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider w-20 md:w-32">
+            <th className="text-left px-2 py-2 md:px-3 md:py-2.5 text-[10px] md:text-[11px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap w-24 md:w-32">
               Date
             </th>
             <th className="text-left px-2 py-2 md:px-3 md:py-2.5 text-[10px] md:text-[11px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell md:w-28">
               Type
             </th>
-            <th className="text-left px-2 py-2 md:px-3 md:py-2.5 text-[10px] md:text-[11px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider w-20 md:w-36">
+            <th className="text-left px-2 py-2 md:px-3 md:py-2.5 text-[10px] md:text-[11px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider hidden sm:table-cell w-20 md:w-36">
               Status
             </th>
-            <th className="text-left px-2 py-2 pr-6 md:px-3 md:py-2.5 text-[10px] md:text-[11px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap min-w-[120px] md:min-w-0 md:w-28">
+            <th className="text-right pl-2 pr-4 md:pl-3 md:pr-6 py-2 md:py-2.5 text-[10px] md:text-[11px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap min-w-[90px] md:w-28">
               Fee
             </th>
           </tr>
@@ -135,21 +135,22 @@ export default function EventsTable({
           {events.map((event, idx) => {
             const uiStatus = getEventUIStatus(event, todayISO);
             const mode = getEventMode(event);
-            const feeValue =
+            const rawFee =
               (event as { fee?: string | number; price?: string | number }).fee ??
-              (event as { fee?: string | number; price?: string | number }).price;
-            const isFree =
-              !feeValue ||
-              feeValue === "Free" ||
-              feeValue === "free" ||
-              feeValue === 0;
-            const feeText = isFree ? "Free" : String(feeValue);
+              (event as { fee?: string | number; price?: string | number }).price ??
+              "";
+            const feeStr = String(rawFee).trim();
+            const isFree = !feeStr || feeStr.toLowerCase() === "free" || feeStr === "0";
+            const displayFee = isFree ? "Free" : feeStr;
+            const feeColorClass = isFree
+              ? "text-[#3B853F] font-semibold"
+              : "text-[#DC2626] font-medium";
 
             return (
               <tr
                 key={event.id}
                 onClick={() => onEventClick?.(event)}
-                className="border-b border-slate-200 dark:border-slate-800/80 hover:bg-[#EAEAEA] dark:hover:bg-slate-800/50 transition-colors duration-150 cursor-pointer"
+                className="border-b border-slate-100 dark:border-slate-800/60 hover:bg-[#EAEAEA] dark:hover:bg-slate-800/50 transition-colors duration-150 cursor-pointer"
               >
                 {/* # */}
                 <td className="px-2 py-2 md:px-3 md:py-3 align-middle text-slate-400 dark:text-slate-400 text-xs hidden md:table-cell md:w-8">
@@ -157,8 +158,8 @@ export default function EventsTable({
                 </td>
 
                 {/* Event name + organizer */}
-                <td className="px-2 py-2 md:px-3 md:py-3 align-middle w-auto min-w-[140px] md:min-w-0 md:w-full">
-                  <div className="font-semibold text-slate-900 dark:text-slate-100 group-hover:text-[#186BA7] dark:group-hover:text-[#60a5fa] transition-colors leading-snug line-clamp-2 text-sm">
+                <td className="px-2 py-2 md:px-3 md:py-3 align-middle w-full min-w-0">
+                  <div className="font-bold text-slate-900 dark:text-slate-100 group-hover:text-[#186BA7] dark:group-hover:text-[#60a5fa] transition-colors leading-snug line-clamp-2 text-sm">
                     {event.title}
                   </div>
                   <div className="flex items-center flex-wrap gap-1.5 mt-0.5 md:mt-1">
@@ -177,7 +178,7 @@ export default function EventsTable({
                 </td>
 
                 {/* Date */}
-                <td className="px-2 py-2 md:px-3 md:py-3 align-middle w-20 md:w-32">
+                <td className="px-2 py-2 md:px-3 md:py-3 align-middle whitespace-nowrap w-24 md:w-32">
                   <div className="text-slate-700 dark:text-slate-200 text-xs font-semibold whitespace-nowrap">
                     {formatDate(event.event_date)}
                   </div>
@@ -192,18 +193,14 @@ export default function EventsTable({
                 </td>
 
                 {/* Status */}
-                <td className="px-2 py-2 md:px-3 md:py-3 align-middle w-20 md:w-36">
+                <td className="px-2 py-2 md:px-3 md:py-3 align-middle hidden sm:table-cell w-20 md:w-36">
                   <StatusBadge status={uiStatus} />
                 </td>
 
-                <td className="px-2 py-2 pr-6 md:px-3 md:py-3 align-middle text-left whitespace-nowrap min-w-[120px] md:min-w-[120px] md:w-32">
-                  <span
-                    className={`text-xs font-semibold whitespace-nowrap ${isFree
-                      ? "text-[#3B853F]"
-                      : "text-slate-900"
-                      }`}
-                  >
-                    {feeText}
+                {/* Fee */}
+                <td className="pl-2 pr-4 md:pl-3 md:pr-6 py-2 md:py-3 align-middle text-right whitespace-nowrap min-w-[90px] md:w-28">
+                  <span className={`text-xs ${feeColorClass} whitespace-nowrap`}>
+                    {displayFee}
                   </span>
                 </td>
               </tr>

@@ -17,6 +17,7 @@ import Sidebar, { type SidebarFilters } from "@/components/Sidebar";
 import EventsTable from "@/components/EventsTable";
 import CityCombobox from "@/components/CityCombobox";
 import EventDetailsModal from "@/components/EventDetailsModal";
+import CustomDropdown from "@/components/CustomDropdown";
 
 // Today's date in YYYY-MM-DD (PKT) — used for status badge derivation.
 // Evaluated once at module level to avoid hydration mismatch.
@@ -89,6 +90,11 @@ const CATEGORY_PILLS: (EventCategory | "All")[] = [
 // Date filter pills
 const DATE_PILLS = ["All", "Today", "This Week", "This Month", "Custom"] as const;
 type DateFilter = (typeof DATE_PILLS)[number];
+
+// Filter options for custom dropdowns
+const TYPE_OPTIONS = ["All Types", ...EVENT_TYPES] as const;
+const PRICE_OPTIONS = ["Any Price", "Free", "Paid"] as const;
+const MODE_OPTIONS = ["Any Mode", "Physical", "Online", "Hybrid"] as const;
 
 // Helper — returns ISO date YYYY-MM-DD n days from today
 function addDays(iso: string, n: number): string {
@@ -354,54 +360,40 @@ export default function HomePage() {
           />
 
           {/* Filter controls */}
-          <div className="flex flex-wrap gap-2 items-center">
-            <select
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+            <CustomDropdown
               value={selectedType}
-              onChange={(e) => {
-                setSelectedType(e.target.value);
+              options={TYPE_OPTIONS}
+              onChange={(val) => {
+                setSelectedType(val);
                 setCurrentPage(1);
               }}
-              className="text-sm border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-800 px-2.5 py-2 outline-none focus:border-[#186BA7] dark:focus:border-[#60a5fa] cursor-pointer text-slate-700 dark:text-slate-200"
-              style={{ borderRadius: 0 }}
-            >
-              <option>All Types</option>
-              {EVENT_TYPES.map((t) => (
-                <option key={t}>{t}</option>
-              ))}
-            </select>
+              ariaLabel="Filter by event type"
+            />
 
-            <select
+            <CustomDropdown
               value={selectedPrice}
-              onChange={(e) => {
-                setSelectedPrice(e.target.value);
+              options={PRICE_OPTIONS}
+              onChange={(val) => {
+                setSelectedPrice(val);
                 setCurrentPage(1);
               }}
-              className="text-sm border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-800 px-2.5 py-2 outline-none focus:border-[#186BA7] dark:focus:border-[#60a5fa] cursor-pointer text-slate-700 dark:text-slate-200"
-              style={{ borderRadius: 0 }}
-            >
-              <option>Any Price</option>
-              <option>Free</option>
-              <option>Paid</option>
-            </select>
+              ariaLabel="Filter by price"
+            />
 
-            <select
+            <CustomDropdown
               value={selectedMode}
-              onChange={(e) => {
-                setSelectedMode(e.target.value);
+              options={MODE_OPTIONS}
+              onChange={(val) => {
+                setSelectedMode(val);
                 setCurrentPage(1);
               }}
-              className="text-sm border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-800 px-2.5 py-2 outline-none focus:border-[#186BA7] dark:focus:border-[#60a5fa] cursor-pointer text-slate-700 dark:text-slate-200"
-              style={{ borderRadius: 0 }}
-            >
-              <option>Any Mode</option>
-              <option>Physical</option>
-              <option>Online</option>
-              <option>Hybrid</option>
-            </select>
+              ariaLabel="Filter by mode"
+            />
 
             <button
               onClick={resetFilters}
-              className="px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-slate-600 bg-gray-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:bg-gray-200 dark:hover:bg-slate-700 hover:border-gray-400 dark:hover:border-slate-500 active:bg-gray-300 dark:active:bg-slate-600 active:scale-[0.98] transition-all duration-150 ease-in-out rounded-none cursor-pointer"
+              className="px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-slate-600 bg-gray-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:bg-gray-200 dark:hover:bg-slate-700 hover:border-gray-400 dark:hover:border-slate-500 active:bg-gray-300 dark:active:bg-slate-600 active:scale-[0.98] transition-all duration-150 ease-in-out rounded-none cursor-pointer h-10 w-full sm:w-[160px] flex items-center justify-center"
             >
               Reset
             </button>
