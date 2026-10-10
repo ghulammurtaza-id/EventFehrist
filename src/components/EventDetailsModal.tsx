@@ -73,7 +73,14 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
   // ── Save state ───────────────────────────────────────────────────────────────
   const [isSaved, setIsSaved] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
+  const [saveToast, setSaveToast] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Helper: show a brief toast message then clear it
+  const showToast = (msg: string) => {
+    setSaveToast(msg);
+    setTimeout(() => setSaveToast(null), 3000);
+  };
 
   // Check on mount whether this event is already saved by the current user
   useEffect(() => {
@@ -101,13 +108,15 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
       } = await supabase.auth.getUser();
 
       if (authError || !user) {
-        router.push("/login");
+        // Not logged in — show toast instead of hard redirect
+        showToast("Please login to save events");
         return;
       }
 
       setSaveLoading(true);
 
       if (isSaved) {
+        // Unsave: delete by user_id + event_id (relies on RLS)
         const { error } = await supabase
           .from("saved_events")
           .delete()
@@ -115,23 +124,26 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
           .eq("event_id", event.id);
 
         if (error) {
-          console.error("Error unsaving event:", error);
+          console.error("[handleSave] Error unsaving event (RLS/FK check):", error);
         } else {
           setIsSaved(false);
+          router.refresh(); // revalidate dashboard saved list
         }
       } else {
+        // Save: insert new row
         const { error } = await supabase
           .from("saved_events")
           .insert({ user_id: user.id, event_id: event.id });
 
         if (error) {
-          console.error("Error saving event:", error);
+          console.error("[handleSave] Error saving event (RLS/FK check):", error);
         } else {
           setIsSaved(true);
+          router.refresh(); // revalidate dashboard saved list
         }
       }
     } catch (err) {
-      console.error("Unexpected error in handleSave:", err);
+      console.error("[handleSave] Unexpected error:", err);
     } finally {
       setSaveLoading(false);
     }
@@ -385,10 +397,12 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
               }`}
           >
             <Heart
-              className={`w-4 h-4 ${isSaved ? "fill-current" : ""
-                }`}
+              className={`w-4 h-4 ${isSaved ? "fill-current" : ""}`}
             />
-            {saveLoading ? "Saving..." : isSaved ? "Saved" : "Save"}
+            {saveLoading
+              ? isSaved ? "Unsaving..." : "Saving..."
+              : isSaved ? "Saved" : "Save"
+            }
           </button>
 
           {/* Share */}
@@ -410,6 +424,16 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
             <Flag className="w-4 h-4" />
             Report
           </button>
+
+          {/* Login-to-save / action toast */}
+          {saveToast && (
+            <span
+              role="status"
+              className="ml-auto text-xs font-medium text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-sm animate-pulse"
+            >
+              {saveToast}
+            </span>
+          )}
         </div>
 
       </div>

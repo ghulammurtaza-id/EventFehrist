@@ -3,15 +3,27 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Pencil } from "lucide-react";
+import { Pencil, Check, LogOut } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CityCombobox from "@/components/CityCombobox";
 import EventDetailsModal from "@/components/EventDetailsModal";
+import Button from "@/components/Button";
 import { supabase } from "@/lib/supabaseClient";
 import type { Database } from "@/lib/supabaseClient";
 import type { User } from "@supabase/supabase-js";
 import type { Event, EventCategory } from "@/lib/mockData";
+
+const DEFAULT_AVATARS = [
+  "avatar-1",
+  "avatar-2",
+  "avatar-3",
+  "avatar-4",
+  "avatar-5",
+  "avatar-6",
+  "avatar-7",
+  "avatar-8",
+];
 
 const TODAY_ISO = new Date().toISOString().split("T")[0];
 
@@ -86,6 +98,27 @@ function DashboardContent() {
   const [primaryCity, setPrimaryCity] = useState("Karachi");
   const [isLoadingUser, setIsLoadingUser] = useState(true);
 
+  // Settings Tab state
+  const [selectedAvatar, setSelectedAvatar] = useState<string>("avatar-1");
+  const [nameInput, setNameInput] = useState("");
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [profileMessage, setProfileMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  // Security / Password state
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  // Logout state
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   // Tabs - initialized based on ?tab= URL parameter
   const initialTab =
     searchParams.get("tab") === "submissions"
@@ -107,6 +140,8 @@ function DashboardContent() {
   // Saved events state
   const [savedEvents, setSavedEvents] = useState<SavedEventItem[]>([]);
   const [totalSavedCount, setTotalSavedCount] = useState<number | null>(null);
+  const [savedPage, setSavedPage] = useState(1);
+  const SAVED_PER_PAGE = 10;
   const [isLoadingEvents, setIsLoadingEvents] = useState(false);
   const [unsavingId, setUnsavingId] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -116,31 +151,31 @@ function DashboardContent() {
   const [totalSubmissionsCount, setTotalSubmissionsCount] = useState<number | null>(null);
   const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(false);
 
-  // Clean data fetching query without messy fallbacks
-  const fetchSavedEvents = async (userId: string) => {
+  const fetchSavedEvents = async (userId: string, page = 1) => {
     setIsLoadingEvents(true);
     try {
-      const { count } = await supabase
+      // Single joined query: count + 10-row page slice
+      const from = (page - 1) * SAVED_PER_PAGE;
+      const to = page * SAVED_PER_PAGE - 1;
+      const { data, error, count } = await supabase
         .from("saved_events")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", userId);
-      setTotalSavedCount(count ?? 0);
-
-      const { data, error } = await supabase
-        .from("saved_events")
-        .select("id, event_id, events (*)")
+        .select("event_id, events(*)", { count: "exact" })
         .eq("user_id", userId)
-        .limit(10);
+        .order("saved_at", { ascending: false })
+        .range(from, to);
+
+      setTotalSavedCount(count ?? 0);
 
       if (!error && data) {
         const formatted: SavedEventItem[] = (
           data as unknown as Array<{
-            id: string;
             event_id: string;
             events: DbEvent | DbEvent[];
           }>
-        ).map((item) => ({
-          id: item.id,
+        ).map((item, i) => ({
+          // saved_events rows don't have an "id" in this select shape;
+          // use event_id as a stable key (unique per user anyway)
+          id: (item as unknown as { id?: string }).id ?? `${item.event_id}-${i}`,
           event_id: item.event_id,
           events: Array.isArray(item.events) ? item.events[0] : item.events,
         }));
@@ -156,22 +191,10 @@ function DashboardContent() {
     }
   };
 
-  const handleViewEvent = async (item: SavedEventItem) => {
+  const handleViewEvent = (item: SavedEventItem) => {
+    // events is already joined — no extra fetch needed
     if (item.events) {
       setSelectedEvent(mapDbRow(item.events));
-    } else if (item.event_id) {
-      try {
-        const { data } = await supabase
-          .from("events")
-          .select("*")
-          .eq("id", item.event_id)
-          .single();
-        if (data) {
-          setSelectedEvent(mapDbRow(data as DbEvent));
-        }
-      } catch (err) {
-        console.error("Error fetching event details:", err);
-      }
     }
   };
 
@@ -229,7 +252,7 @@ function DashboardContent() {
         // Fetch profile
         const { data: profile } = await supabase
           .from("profiles")
-          .select("full_name, email, primary_city")
+          .select("full_name, email, primary_city, avatar_url")
           .eq("id", currentUser.id)
           .maybeSingle();
 
@@ -239,6 +262,16 @@ function DashboardContent() {
           currentUser.email?.split("@")[0] ||
           "User";
         setFullName(name);
+        setNameInput(name);
+
+        const rawAvatar =
+          profile?.avatar_url ||
+          currentUser.user_metadata?.avatar_id ||
+          currentUser.user_metadata?.avatar_url ||
+          "avatar-1";
+        const normalizedAvatar =
+          rawAvatar.replace(/^\/avatars\//, "").replace(/\.png$/, "") || "avatar-1";
+        setSelectedAvatar(normalizedAvatar);
 
         if (profile?.email) {
           setEmail(profile.email);
@@ -248,8 +281,8 @@ function DashboardContent() {
           setPrimaryCity(profile.primary_city);
         }
 
-        // Fetch saved events
-        fetchSavedEvents(currentUser.id);
+        // Fetch saved events (page 1)
+        fetchSavedEvents(currentUser.id, 1);
 
         // Fetch submissions
         fetchSubmissions(currentUser.id);
@@ -263,14 +296,22 @@ function DashboardContent() {
     loadUserData();
   }, [router]);
 
-  // Handle Unsave
-  const handleUnsave = async (id: string) => {
-    setUnsavingId(id);
+  // Handle Unsave — delete then router.refresh() + re-fetch current page
+  const handleUnsave = async (savedRowId: string) => {
+    setUnsavingId(savedRowId);
     try {
-      const { error } = await supabase.from("saved_events").delete().eq("id", id);
-      if (!error) {
-        setSavedEvents((prev) => prev.filter((item) => item.id !== id));
-        setTotalSavedCount((prev) => (prev !== null ? Math.max(0, prev - 1) : null));
+      const { error } = await supabase
+        .from("saved_events")
+        .delete()
+        .eq("id", savedRowId);
+      if (!error && user?.id) {
+        // Revalidate: if this was the last item on a non-first page, go back one
+        const newTotal = (totalSavedCount ?? 1) - 1;
+        const newMaxPage = Math.max(1, Math.ceil(newTotal / SAVED_PER_PAGE));
+        const targetPage = Math.min(savedPage, newMaxPage);
+        setSavedPage(targetPage);
+        router.refresh();
+        await fetchSavedEvents(user.id, targetPage);
       }
     } catch (err) {
       console.error("Error unsaving event:", err);
@@ -293,6 +334,125 @@ function DashboardContent() {
     }
   };
 
+  // Handle Save Profile (Full Name & Avatar)
+  const handleSaveProfile = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!user) return;
+    if (!nameInput.trim()) {
+      setProfileMessage({ type: "error", text: "Full name cannot be empty." });
+      return;
+    }
+
+    setIsSavingProfile(true);
+    setProfileMessage(null);
+
+    try {
+      // Update public.profiles table
+      let { error: updateError } = await supabase
+        .from("profiles")
+        .update({
+          full_name: nameInput.trim(),
+          avatar_url: selectedAvatar,
+        })
+        .eq("id", user.id);
+
+      if (updateError) {
+        // Fallback update
+        const fallback = await supabase
+          .from("profiles")
+          .update({
+            full_name: nameInput.trim(),
+          })
+          .eq("id", user.id);
+        if (fallback.error) throw fallback.error;
+      }
+
+      // Keep Auth user_metadata synced
+      await supabase.auth.updateUser({
+        data: {
+          full_name: nameInput.trim(),
+          avatar_id: selectedAvatar,
+          avatar_url: selectedAvatar,
+        },
+      });
+
+      setFullName(nameInput.trim());
+      setProfileMessage({ type: "success", text: "Profile updated successfully." });
+      setTimeout(() => setProfileMessage(null), 4000);
+      router.refresh();
+    } catch (err: unknown) {
+      console.error("Error saving profile:", err);
+      const msg = err instanceof Error ? err.message : "Failed to save changes.";
+      setProfileMessage({ type: "error", text: msg });
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
+  // Handle Update Password
+  const handleUpdatePassword = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setPasswordMessage(null);
+
+    if (!newPassword) {
+      setPasswordMessage({ type: "error", text: "Please enter a new password." });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setPasswordMessage({
+        type: "error",
+        text: "Password must be at least 6 characters.",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage({
+        type: "error",
+        text: "Passwords do not match.",
+      });
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      setPasswordMessage({
+        type: "success",
+        text: "Password updated successfully.",
+      });
+      setNewPassword("");
+      setConfirmPassword("");
+      setTimeout(() => setPasswordMessage(null), 4000);
+    } catch (err: unknown) {
+      console.error("Error updating password:", err);
+      const msg = err instanceof Error ? err.message : "Failed to update password.";
+      setPasswordMessage({ type: "error", text: msg });
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  };
+
+  // Handle Logout
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await supabase.auth.signOut();
+      router.push("/login");
+    } catch (err: unknown) {
+      console.error("Error logging out:", err);
+      setIsLoggingOut(false);
+    }
+  };
+
   // Format date like "Oct 5"
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "TBD";
@@ -307,10 +467,8 @@ function DashboardContent() {
 
   const initial = (fullName || email || "U").trim().charAt(0).toUpperCase();
 
-  const savedCountDisplay =
-    totalSavedCount !== null && totalSavedCount > 0
-      ? `${savedEvents.length}/${totalSavedCount}`
-      : `${savedEvents.length}`;
+  const savedTotalPages = Math.max(1, Math.ceil((totalSavedCount ?? 0) / SAVED_PER_PAGE));
+
 
   const submissionsCountDisplay =
     totalSubmissionsCount !== null && totalSubmissionsCount > 0
@@ -333,9 +491,19 @@ function DashboardContent() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                 {/* Left Side: Avatar + Name & Email */}
                 <div className="flex items-center gap-3 sm:gap-4">
-                  <div className="w-10 h-10 text-lg sm:w-12 sm:h-12 sm:text-xl rounded-full bg-[#186BA7] flex items-center justify-center text-white font-medium flex-shrink-0">
-                    {initial}
-                  </div>
+                  {selectedAvatar ? (
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-slate-200 overflow-hidden bg-slate-50 flex-shrink-0">
+                      <img
+                        src={`/avatars/${selectedAvatar}.png`}
+                        alt={fullName}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-10 h-10 text-lg sm:w-12 sm:h-12 sm:text-xl rounded-full bg-[#186BA7] flex items-center justify-center text-white font-medium flex-shrink-0">
+                      {initial}
+                    </div>
+                  )}
                   <div>
                     <h1 className="text-base sm:text-xl font-bold text-slate-900 leading-snug">
                       {fullName}
@@ -401,9 +569,11 @@ function DashboardContent() {
                     className="text-base sm:text-xl font-bold text-slate-900 flex items-center gap-1.5"
                   >
                     <span>Saved Events</span>
-                    <span className="text-slate-500 font-normal text-xs sm:text-sm">
-                      ({savedCountDisplay})
-                    </span>
+                    {totalSavedCount !== null && (
+                      <span className="text-slate-500 font-normal text-xs sm:text-sm">
+                        ({totalSavedCount})
+                      </span>
+                    )}
                   </h2>
                   <Link
                     href="/saved-events"
@@ -419,16 +589,20 @@ function DashboardContent() {
                     <div className="p-10 text-center text-sm text-slate-500">
                       Loading saved events...
                     </div>
-                  ) : savedEvents.length === 0 ? (
-                    <div className="p-10 text-center">
-                      <p className="text-sm text-slate-500 mb-3">
-                        You have not saved any events yet.
+                  ) : totalSavedCount === 0 ? (
+                    <div className="p-12 text-center">
+                      <div className="text-3xl mb-3">🔖</div>
+                      <p className="text-sm font-semibold text-slate-700 mb-1">
+                        No saved events yet
+                      </p>
+                      <p className="text-xs text-slate-400 mb-4">
+                        Bookmark events you're interested in and they'll appear here.
                       </p>
                       <Link
                         href="/"
-                        className="inline-block text-xs sm:text-sm font-semibold border border-slate-300 bg-gray-100 text-slate-900 px-4 py-2 rounded-sm hover:bg-gray-200 transition-colors"
+                        className="inline-block text-xs sm:text-sm font-semibold border border-[#186BA7] bg-[#186BA7] text-white px-4 py-2 rounded-sm hover:bg-[#155d91] transition-colors"
                       >
-                        Explore Events
+                        Browse Events
                       </Link>
                     </div>
                   ) : (
@@ -512,8 +686,55 @@ function DashboardContent() {
                     </div>
                   )}
                 </div>
+
+                {/* Pagination */}
+                {!isLoadingEvents && (totalSavedCount ?? 0) > SAVED_PER_PAGE && (
+                  <div className="mt-4 flex items-center justify-center gap-2">
+                    <button
+                      disabled={savedPage === 1}
+                      onClick={() => {
+                        const p = savedPage - 1;
+                        setSavedPage(p);
+                        if (user?.id) fetchSavedEvents(user.id, p);
+                      }}
+                      className="w-8 h-8 flex items-center justify-center text-sm border border-slate-300 rounded-sm bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      aria-label="Previous page"
+                    >
+                      &#8249;
+                    </button>
+                    {Array.from({ length: savedTotalPages }, (_, i) => i + 1).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => {
+                          setSavedPage(p);
+                          if (user?.id) fetchSavedEvents(user.id, p);
+                        }}
+                        aria-current={savedPage === p ? "page" : undefined}
+                        className={`w-8 h-8 flex items-center justify-center text-sm border rounded-sm transition-colors ${savedPage === p
+                            ? "bg-[#186BA7] text-white border-[#186BA7] font-semibold"
+                            : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                          }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                    <button
+                      disabled={savedPage === savedTotalPages}
+                      onClick={() => {
+                        const p = savedPage + 1;
+                        setSavedPage(p);
+                        if (user?.id) fetchSavedEvents(user.id, p);
+                      }}
+                      className="w-8 h-8 flex items-center justify-center text-sm border border-slate-300 rounded-sm bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      aria-label="Next page"
+                    >
+                      &#8250;
+                    </button>
+                  </div>
+                )}
               </section>
             )}
+
 
             {/* ── Tab Content: My Submissions ─────────────────────────────── */}
             {activeTab === "My Submissions" && (
@@ -662,9 +883,214 @@ function DashboardContent() {
               </section>
             )}
 
-            {/* Settings Tab: Empty div per requirements */}
+            {/* ── Settings Tab Content ─────────────────────────────────────── */}
             {activeTab === "Settings" && (
-              <div className="border border-slate-200 rounded-sm p-8 bg-white"></div>
+              <div className="space-y-8">
+                {/* 1. Profile Information Card */}
+                <section
+                  aria-labelledby="profile-info-heading"
+                  className="border border-slate-200 rounded-sm bg-white p-5 sm:p-8 shadow-xs"
+                >
+                  <h2
+                    id="profile-info-heading"
+                    className="text-sm sm:text-base font-bold text-slate-900 mb-6"
+                  >
+                    Profile Information
+                  </h2>
+
+                  {/* Avatars Section */}
+                  <div className="mb-8">
+                    {/* Mobile: "Default Avatars" heading above current avatar */}
+                    <h3 className="block md:hidden text-xs sm:text-sm font-bold text-slate-900 mb-4">
+                      Default Avatars
+                    </h3>
+
+                    <div className="flex flex-col md:flex-row md:items-start gap-6 md:gap-10">
+                      {/* Current Avatar */}
+                      <div className="flex flex-col items-center flex-shrink-0 mx-auto md:mx-0">
+                        <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-full border border-slate-200 overflow-hidden bg-slate-50 flex items-center justify-center shadow-xs">
+                          <img
+                            src={`/avatars/${selectedAvatar}.png`}
+                            alt="Current avatar"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <span className="text-xs text-slate-500 mt-2 font-normal text-center">
+                          Current avatar
+                        </span>
+                      </div>
+
+                      {/* Default Avatars list/grid */}
+                      <div className="flex-1 min-w-0">
+                        {/* Desktop: "Default Avatars" heading */}
+                        <h3 className="hidden md:block text-xs sm:text-sm font-bold text-slate-900 mb-3">
+                          Default Avatars
+                        </h3>
+
+                        {/* Grid on mobile (3 cols), flex-wrap on desktop */}
+                        <div className="grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-3 sm:gap-4 max-w-[280px] sm:max-w-none mx-auto md:mx-0">
+                          {DEFAULT_AVATARS.map((avatarId) => {
+                            const isSelected = selectedAvatar === avatarId;
+                            return (
+                              <button
+                                key={avatarId}
+                                type="button"
+                                onClick={() => setSelectedAvatar(avatarId)}
+                                aria-label={`Select ${avatarId}`}
+                                className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full cursor-pointer transition-all duration-150 focus:outline-none p-0.5 ${isSelected
+                                    ? "ring-2 ring-[#186BA7] ring-offset-2 scale-105"
+                                    : "hover:scale-105 opacity-90 hover:opacity-100"
+                                  }`}
+                              >
+                                <div className="w-full h-full rounded-full overflow-hidden bg-slate-100">
+                                  <img
+                                    src={`/avatars/${avatarId}.png`}
+                                    alt={avatarId}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                {isSelected && (
+                                  <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-[#186BA7] text-white rounded-full flex items-center justify-center shadow-xs">
+                                    <Check className="w-3 h-3 stroke-[3]" />
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Form: Full Name & Email */}
+                  <form onSubmit={handleSaveProfile}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 mb-6">
+                      <div>
+                        <label className="block text-xs sm:text-sm font-semibold text-slate-800 mb-1.5">
+                          Full Name
+                        </label>
+                        <input
+                          type="text"
+                          value={nameInput}
+                          onChange={(e) => setNameInput(e.target.value)}
+                          placeholder="Full Name"
+                          className="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-sm bg-white text-slate-900 focus:outline-none focus:border-[#186BA7] transition-colors"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs sm:text-sm font-semibold text-slate-800 mb-1.5">
+                          Email
+                        </label>
+                        <input
+                          type="email"
+                          value={email}
+                          readOnly
+                          disabled
+                          className="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-sm bg-slate-50/80 text-slate-500 cursor-not-allowed select-none"
+                        />
+                        <p className="text-xs text-slate-400 mt-1">
+                          Email is read-only.
+                        </p>
+                      </div>
+                    </div>
+
+                    {profileMessage && (
+                      <div
+                        className={`mb-4 text-xs font-medium px-3.5 py-2 rounded-sm ${profileMessage.type === "success"
+                            ? "bg-green-50 text-green-700 border border-green-200"
+                            : "bg-red-50 text-red-700 border border-red-200"
+                          }`}
+                      >
+                        {profileMessage.text}
+                      </div>
+                    )}
+
+                    <div className="flex justify-end">
+                      <Button
+                        type="submit"
+                        isLoading={isSavingProfile}
+                        className="w-36 sm:w-44 whitespace-nowrap px-4 py-2 sm:px-6 sm:py-2 text-xs sm:text-sm"
+                      >
+                        Save Changes
+                      </Button>
+                    </div>
+                  </form>
+                </section>
+
+                {/* 2. Security Section */}
+                <section
+                  aria-labelledby="security-heading"
+                  className="border border-slate-200 rounded-sm bg-white p-5 sm:p-8 shadow-xs"
+                >
+                  <h2
+                    id="security-heading"
+                    className="text-sm sm:text-base font-bold text-slate-900 mb-6"
+                  >
+                    Security
+                  </h2>
+
+                  <form onSubmit={handleUpdatePassword}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 mb-6">
+                      <div>
+                        <label className="block text-xs sm:text-sm font-semibold text-slate-800 mb-1.5">
+                          New Password
+                        </label>
+                        <input
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="••••••••••••"
+                          className="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-sm bg-white text-slate-900 focus:outline-none focus:border-[#186BA7] transition-colors"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs sm:text-sm font-semibold text-slate-800 mb-1.5">
+                          Confirm Password
+                        </label>
+                        <input
+                          type="password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="••••••••••••"
+                          className="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-sm bg-white text-slate-900 focus:outline-none focus:border-[#186BA7] transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    {passwordMessage && (
+                      <div
+                        className={`mb-4 text-xs font-medium px-3.5 py-2 rounded-sm ${passwordMessage.type === "success"
+                            ? "bg-green-50 text-green-700 border border-green-200"
+                            : "bg-red-50 text-red-700 border border-red-200"
+                          }`}
+                      >
+                        {passwordMessage.text}
+                      </div>
+                    )}
+
+                    <div className="flex justify-end gap-4 mt-4">
+                      <Button
+                        type="submit"
+                        isLoading={isUpdatingPassword}
+                        className="w-44 whitespace-nowrap px-4 py-2 sm:px-6 sm:py-2 text-xs sm:text-sm"
+                      >
+                        Update Password
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={handleLogout}
+                        isLoading={isLoggingOut}
+                        className="w-44 whitespace-nowrap px-4 py-2 sm:px-6 sm:py-2 text-xs sm:text-sm flex items-center justify-center gap-2"
+                      >
+                        <LogOut className="w-4 h-4 text-slate-800 dark:text-slate-200" />
+                        Logout
+                      </Button>
+                    </div>
+                  </form>
+                </section>
+              </div>
             )}
           </>
         )}
@@ -677,7 +1103,6 @@ function DashboardContent() {
           todayISO={TODAY_ISO}
           onClose={() => {
             setSelectedEvent(null);
-            if (user?.id) fetchSavedEvents(user.id);
           }}
         />
       )}

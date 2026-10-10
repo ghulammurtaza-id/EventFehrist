@@ -114,7 +114,9 @@ function HomePageInner() {
   const searchParams = useSearchParams();
 
   // ── Data state ────────────────────────────────────────────────────────────────
-  const [allEvents, setAllEvents] = useState<Event[]>([]);
+  // Only the current page's rows are held in memory (10 at a time)
+  const [pageEvents, setPageEvents] = useState<Event[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
@@ -125,55 +127,146 @@ function HomePageInner() {
   // Toast shown when a deep-linked event ID is not found in the data
   const [eventNotFoundToast, setEventNotFoundToast] = useState(false);
 
-  // ── Filter state ─────────────────────────────────────────────────────────────
+  // ── Filter state (URL-synced: city, category, page) ──────────────────────────
+  // city & category are pushed to the query string so they survive refresh/share.
+  // Remaining filters stay in local state (they apply on the 10-row page slice).
+  const urlCity = searchParams.get("city") ?? "Karachi";
+  const urlCategory = (searchParams.get("category") ?? "All") as EventCategory | "All";
+  const urlPage = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCity, setSelectedCity] = useState<string>("Karachi");
-  const [selectedCategory, setSelectedCategory] = useState<EventCategory | "All">("All");
   const [selectedDate, setSelectedDate] = useState<DateFilter>("All");
   const [selectedType, setSelectedType] = useState<string>("All Types");
   const [selectedPrice, setSelectedPrice] = useState<string>("Any Price");
   const [selectedMode, setSelectedMode] = useState<string>("Any Mode");
   const [sidebarFilters, setSidebarFilters] = useState<SidebarFilters>(DEFAULT_SIDEBAR);
 
-  // ── Pagination ───────────────────────────────────────────────────────────────
-  const [currentPage, setCurrentPage] = useState(1);
-  const EVENTS_PER_PAGE_COUNT = 10;
+  const EVENTS_PER_PAGE = 10;
   const listContainerRef = useRef<HTMLDivElement>(null);
   const isFirstMount = useRef(true);
   // Track whether we've already tried to open the deep-linked event
   const deepLinkHandled = useRef(false);
 
+  // ── URL-param helpers ─────────────────────────────────────────────────────────
+  // Push city/category/page changes into the URL.
+  const pushParams = useCallback(
+    (updates: { city?: string; category?: string; page?: number }) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (updates.city !== undefined) params.set("city", updates.city);
+      if (updates.category !== undefined) params.set("category", updates.category);
+      if (updates.page !== undefined) params.set("page", String(updates.page));
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [searchParams, pathname, router]
+  );
+
+  const selectedCity = urlCity;
+  const selectedCategory = urlCategory;
+
+  // ── Reset all filters whenever selectedCity changes ──────────────────────────
+  const prevCityRef = useRef(selectedCity);
+  useEffect(() => {
+    if (prevCityRef.current !== selectedCity) {
+      prevCityRef.current = selectedCity;
+      setSearchQuery("");
+      setSelectedDate("All");
+      setSelectedType("All Types");
+      setSelectedPrice("Any Price");
+      setSelectedMode("Any Mode");
+      setSidebarFilters(DEFAULT_SIDEBAR);
+      pushParams({ city: selectedCity, category: "All", page: 1 });
+    }
+  }, [selectedCity, pushParams]);
+
   // Smooth scroll to top of list when page changes
   useEffect(() => {
-    if (isFirstMount.current) {
-      isFirstMount.current = false;
-      return;
-    }
+    if (isFirstMount.current) { isFirstMount.current = false; return; }
     if (listContainerRef.current) {
       listContainerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  }, [currentPage]);
+  }, [urlPage]);
 
-  // ── Fetch from Supabase ───────────────────────────────────────────────────────
+  // ── Fetch from Supabase (count + page slice) ──────────────────────────────────
   const fetchEvents = useCallback(async () => {
     setLoading(true);
     setFetchError(null);
     try {
-      const { data, error } = await supabase
+      // Helper to apply identical filters to both count and data queries
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const applyFilters = (query: any) => {
+        let q = query;
+        if (urlCity !== "All Cities") {
+          q = q.eq("city", urlCity);
+        }
+        if (urlCategory !== "All") {
+          q = q.eq("category", urlCategory);
+        }
+        if (selectedType !== "All Types") {
+          q = q.eq("event_type", selectedType);
+        }
+        if (selectedPrice === "Free") {
+          q = q.or("fee.ilike.free,fee.eq.0,fee.is.null");
+        } else if (selectedPrice === "Paid") {
+          q = q.not("fee", "ilike", "free").neq("fee", "0").not("fee", "is", null);
+        }
+        if (selectedMode === "Online") {
+          q = q.or("event_type.eq.Webinar,venue_location.ilike.%online%,venue_location.ilike.%zoom%");
+        } else if (selectedMode === "Hybrid") {
+          q = q.ilike("venue_location", "%hybrid%");
+        } else if (selectedMode === "Physical") {
+          q = q
+            .neq("event_type", "Webinar")
+            .not("venue_location", "ilike", "%online%")
+            .not("venue_location", "ilike", "%zoom%")
+            .not("venue_location", "ilike", "%hybrid%");
+        }
+        if (selectedDate === "Today") {
+          q = q.eq("event_date", TODAY_ISO);
+        } else if (selectedDate === "This Week") {
+          q = q.gte("event_date", TODAY_ISO).lte("event_date", addDays(TODAY_ISO, 7));
+        } else if (selectedDate === "This Month") {
+          q = q.gte("event_date", TODAY_ISO).lte("event_date", addDays(TODAY_ISO, 30));
+        }
+        return q;
+      };
+
+      // 1. Cheap count query — no rows returned, includes active filters
+      let countQuery = supabase
+        .from("events")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "Approved");
+      countQuery = applyFilters(countQuery);
+
+      const { count, error: countErr } = await countQuery;
+      if (countErr) throw countErr;
+      const total = count ?? 0;
+      setTotalCount(total);
+
+      // 2. Fetch only the current page's 10 rows
+      const targetPage = Math.max(1, urlPage);
+      const maxPages = Math.max(1, Math.ceil(total / EVENTS_PER_PAGE));
+      const effectivePage = Math.min(targetPage, maxPages);
+      const from = (effectivePage - 1) * EVENTS_PER_PAGE;
+      const to = effectivePage * EVENTS_PER_PAGE - 1;
+
+      let dataQuery = supabase
         .from("events")
         .select("*")
         .eq("status", "Approved")
-        .order("event_date", { ascending: true });
+        .order("event_date", { ascending: true })
+        .range(from, to);
+      dataQuery = applyFilters(dataQuery);
 
+      const { data, error } = await dataQuery;
       if (error) throw error;
-      setAllEvents((data || []).map(mapDbRow));
+      setPageEvents((data || []).map(mapDbRow));
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to load events.";
       setFetchError(msg);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [urlCity, urlCategory, urlPage, selectedType, selectedDate, selectedPrice, selectedMode]);
 
   useEffect(() => {
     fetchEvents();
@@ -216,11 +309,11 @@ function HomePageInner() {
 
   // ── Deep-link: open modal from ?event=<id> on first data load ────────────────
   useEffect(() => {
-    if (loading || allEvents.length === 0 || deepLinkHandled.current) return;
+    if (loading || pageEvents.length === 0 || deepLinkHandled.current) return;
     const eventId = searchParams.get("event");
     if (!eventId) return;
     deepLinkHandled.current = true;
-    const found = allEvents.find((e) => e.id === eventId);
+    const found = pageEvents.find((e) => e.id === eventId);
     if (found) {
       setSelectedEvent(found);
     } else {
@@ -232,21 +325,16 @@ function HomePageInner() {
       setEventNotFoundToast(true);
       setTimeout(() => setEventNotFoundToast(false), 4000);
     }
-  }, [loading, allEvents, searchParams, pathname, router]);
+  }, [loading, pageEvents, searchParams, pathname, router]);
 
-  // ── Derived: filtered events ─────────────────────────────────────────────────
+  // ── Client-side filter on the current 10-row page slice ──────────────────────
+  // city & category are already filtered server-side; these apply locally.
   const filteredEvents = useMemo(() => {
     const todayStart = TODAY_ISO;
     const weekEnd = addDays(TODAY_ISO, 7);
     const monthEnd = addDays(TODAY_ISO, 30);
 
-    return allEvents.filter((event) => {
-      // City filter
-      if (selectedCity !== "All Cities" && event.city !== selectedCity) return false;
-
-      // Category filter
-      if (selectedCategory !== "All" && event.category !== selectedCategory) return false;
-
+    return pageEvents.filter((event) => {
       // Event type filter
       if (selectedType !== "All Types" && event.event_type !== selectedType) return false;
 
@@ -266,20 +354,12 @@ function HomePageInner() {
 
       // Date filter
       if (selectedDate === "Today" && event.event_date !== todayStart) return false;
-      if (
-        selectedDate === "This Week" &&
-        (event.event_date < todayStart || event.event_date > weekEnd)
-      )
-        return false;
-      if (
-        selectedDate === "This Month" &&
-        (event.event_date < todayStart || event.event_date > monthEnd)
-      )
-        return false;
+      if (selectedDate === "This Week" &&
+        (event.event_date < todayStart || event.event_date > weekEnd)) return false;
+      if (selectedDate === "This Month" &&
+        (event.event_date < todayStart || event.event_date > monthEnd)) return false;
 
       // Sidebar: Audience filter
-      // The DB stores audience as an array in the `audience` column (mapped to tags for now)
-      // We filter if any selected audience value matches the event tags
       if (sidebarFilters.audience.length > 0) {
         const eventAudience = (event.tags || []).map((t) => t.toLowerCase());
         const matches = sidebarFilters.audience.some((a) =>
@@ -321,58 +401,76 @@ function HomePageInner() {
 
       return true;
     });
-  }, [
-    allEvents,
-    selectedCity,
-    selectedCategory,
-    selectedDate,
-    selectedType,
-    selectedPrice,
-    selectedMode,
-    sidebarFilters,
-    searchQuery,
-  ]);
+  }, [pageEvents, selectedDate, selectedType, selectedPrice, selectedMode, sidebarFilters, searchQuery]);
 
-  // ── Derived: paginated slice ─────────────────────────────────────────────────
-  const totalPages = Math.max(1, Math.ceil(filteredEvents.length / EVENTS_PER_PAGE_COUNT));
-  const safePage = Math.min(currentPage, totalPages);
-  const startIndex = (safePage - 1) * EVENTS_PER_PAGE_COUNT;
-  const paginatedEvents = filteredEvents.slice(startIndex, startIndex + EVENTS_PER_PAGE_COUNT);
+  // ── Pagination derived values ─────────────────────────────────────────────────
+  const totalPages = Math.max(1, Math.ceil(totalCount / EVENTS_PER_PAGE));
+  const safePage = Math.min(urlPage, totalPages);
+  const startIndex = (safePage - 1) * EVENTS_PER_PAGE; // global row offset for display
+
+  // "Showing X of N" counter
+  const currentVisibleCount = filteredEvents.length;
 
   // City label
-  const cityLabel =
-    selectedCity === "All Cities" ? "All Events" : `${selectedCity} Events`;
+  const cityLabel = urlCity === "All Cities" ? "All Events" : `${urlCity} Events`;
 
   // ── Helpers ───────────────────────────────────────────────────────────────────
   function resetFilters() {
     setSearchQuery("");
-    setSelectedCategory("All");
     setSelectedDate("All");
     setSelectedType("All Types");
     setSelectedPrice("Any Price");
     setSelectedMode("Any Mode");
     setSidebarFilters(DEFAULT_SIDEBAR);
-    setCurrentPage(1);
+    pushParams({ city: "Karachi", category: "All", page: 1 });
   }
 
   function handleCityChange(city: string) {
-    setSelectedCity(city);
-    setCurrentPage(1);
+    setSearchQuery("");
+    setSelectedDate("All");
+    setSelectedType("All Types");
+    setSelectedPrice("Any Price");
+    setSelectedMode("Any Mode");
+    setSidebarFilters(DEFAULT_SIDEBAR);
+    pushParams({ city, category: "All", page: 1 });
   }
 
   function handleCategoryPill(cat: EventCategory | "All") {
-    setSelectedCategory(cat);
-    setCurrentPage(1);
+    // Reset to page 1 whenever category changes
+    pushParams({ category: cat, page: 1 });
+  }
+
+  function handleTypeChange(type: string) {
+    setSelectedType(type);
+    if (urlPage !== 1) {
+      pushParams({ page: 1 });
+    }
+  }
+
+  function handlePriceChange(price: string) {
+    setSelectedPrice(price);
+    if (urlPage !== 1) {
+      pushParams({ page: 1 });
+    }
+  }
+
+  function handleModeChange(mode: string) {
+    setSelectedMode(mode);
+    if (urlPage !== 1) {
+      pushParams({ page: 1 });
+    }
   }
 
   function handleDatePill(d: DateFilter) {
     setSelectedDate(d);
-    setCurrentPage(1);
+    if (urlPage !== 1) {
+      pushParams({ page: 1 });
+    }
   }
 
   function goToPage(p: number) {
     const clamped = Math.max(1, Math.min(totalPages, p));
-    setCurrentPage(clamped);
+    pushParams({ page: clamped });
   }
 
   // ── Event open/close with URL sync ───────────────────────────────────────────
@@ -390,6 +488,9 @@ function HomePageInner() {
     const qs = params.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
   }
+
+  // Re-expose currentPage alias so JSX can reference it cleanly
+  const currentPage = safePage;
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-[#0b1120] text-slate-900 dark:text-slate-100 transition-colors">
@@ -447,7 +548,6 @@ function HomePageInner() {
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
-              setCurrentPage(1);
             }}
             className="flex-1 px-3 py-2 text-sm border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-800/90 text-slate-900 dark:text-slate-100 outline-none focus:border-[#186BA7] dark:focus:border-[#60a5fa] placeholder:text-slate-400 dark:placeholder:text-slate-400 transition-colors min-w-0"
             style={{ borderRadius: 0 }}
@@ -458,30 +558,21 @@ function HomePageInner() {
             <CustomDropdown
               value={selectedType}
               options={TYPE_OPTIONS}
-              onChange={(val) => {
-                setSelectedType(val);
-                setCurrentPage(1);
-              }}
+              onChange={handleTypeChange}
               ariaLabel="Filter by event type"
             />
 
             <CustomDropdown
               value={selectedPrice}
               options={PRICE_OPTIONS}
-              onChange={(val) => {
-                setSelectedPrice(val);
-                setCurrentPage(1);
-              }}
+              onChange={handlePriceChange}
               ariaLabel="Filter by price"
             />
 
             <CustomDropdown
               value={selectedMode}
               options={MODE_OPTIONS}
-              onChange={(val) => {
-                setSelectedMode(val);
-                setCurrentPage(1);
-              }}
+              onChange={handleModeChange}
               ariaLabel="Filter by mode"
             />
 
@@ -553,7 +644,7 @@ function HomePageInner() {
 
           {mobileSidebarOpen && (
             <div className="mt-3">
-              <Sidebar filters={sidebarFilters} onFiltersChange={(f) => { setSidebarFilters(f); setCurrentPage(1); }} />
+              <Sidebar filters={sidebarFilters} onFiltersChange={(f) => { setSidebarFilters(f); }} />
             </div>
           )}
         </div>
@@ -563,7 +654,7 @@ function HomePageInner() {
 
           {/* Left Sidebar — desktop only */}
           <aside className="hidden md:block w-[240px] flex-shrink-0">
-            <Sidebar filters={sidebarFilters} onFiltersChange={(f) => { setSidebarFilters(f); setCurrentPage(1); }} />
+            <Sidebar filters={sidebarFilters} onFiltersChange={(f) => { setSidebarFilters(f); }} />
           </aside>
 
           {/* Right: Event count + Table + Pagination */}
@@ -589,33 +680,30 @@ function HomePageInner() {
 
             {!loading && !fetchError && (
               <div ref={listContainerRef} className="scroll-mt-4">
-                {/* Showing N events */}
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-2.5">
+                <p className="text-sm text-slate-500 font-medium mb-2.5">
                   Showing{" "}
-                  <span className="font-semibold text-slate-800 dark:text-slate-100">
-                    {paginatedEvents.length}
+                  <span className="text-slate-800 dark:text-slate-100 font-semibold">
+                    {currentVisibleCount}
+                  </span>{" "}
+                  of{" "}
+                  <span className="text-slate-800 dark:text-slate-100 font-semibold">
+                    {totalCount}
                   </span>{" "}
                   events
-                  {filteredEvents.length > EVENTS_PER_PAGE_COUNT && (
-                    <span className="text-slate-400 dark:text-slate-500">
-                      {" "}
-                      (of {filteredEvents.length} total)
-                    </span>
-                  )}
                 </p>
 
                 {/* Data Table */}
                 <EventsTable
-                  events={paginatedEvents}
+                  events={filteredEvents}
                   todayISO={TODAY_ISO}
                   startIndex={startIndex}
                   onEventClick={openEvent}
                 />
 
                 {/* ── Pagination ─────────────────────────────────────────────────── */}
-                {filteredEvents.length > EVENTS_PER_PAGE_COUNT && (
+                {totalCount > EVENTS_PER_PAGE && (
                   <Pagination
-                    currentPage={safePage}
+                    currentPage={currentPage}
                     totalPages={totalPages}
                     onPageChange={goToPage}
                   />
