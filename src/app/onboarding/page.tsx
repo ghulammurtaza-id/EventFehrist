@@ -47,10 +47,38 @@ export default function OnboardingPage() {
         return;
       }
 
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("onboarding_prompted", "true");
+      }
       router.push("/");
     } catch {
       setErrorMessage("An unexpected error occurred. Please try again.");
       setIsLoading(false);
+    }
+  };
+
+  const [isSkipping, setIsSkipping] = useState(false);
+
+  const handleSkip = async () => {
+    setIsSkipping(true);
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        await supabase
+          .from("profiles")
+          .update({ primary_city: "Karachi" })
+          .eq("id", user.id);
+      }
+    } catch (err) {
+      console.error("Error setting default city on skip:", err);
+    } finally {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("onboarding_prompted", "true");
+      }
+      router.push("/");
     }
   };
 
@@ -121,10 +149,11 @@ export default function OnboardingPage() {
           {/* Skip link */}
           <button
             type="button"
-            onClick={() => router.push("/")}
-            className="text-sm text-[#186BA7] hover:underline mt-4 block text-left w-full bg-transparent border-none p-0 cursor-pointer"
+            onClick={handleSkip}
+            disabled={isSkipping || isLoading}
+            className="text-sm text-[#186BA7] hover:underline mt-4 block text-left w-full bg-transparent border-none p-0 cursor-pointer disabled:opacity-50"
           >
-            Skip for now
+            {isSkipping ? "Skipping..." : "Skip for now"}
           </button>
         </div>
       </main>
