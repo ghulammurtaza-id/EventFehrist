@@ -16,11 +16,15 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
 
   if (code) {
-    const cookieStore = cookies();
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
-    await supabase.auth.exchangeCodeForSession(code);
+    try {
+      const cookieStore = cookies();
+      const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+      await supabase.auth.exchangeCodeForSession(code);
+    } catch (error) {
+      console.error("Auth callback error exchanging code for session:", error);
+    }
   }
 
-  // Always redirect — even if code was missing — so the user never gets stuck.
+  // Always redirect — even if code was missing or already used — so the user never gets stuck.
   return NextResponse.redirect(new URL("/verify-success", origin));
 }
