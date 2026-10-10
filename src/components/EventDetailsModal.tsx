@@ -138,10 +138,11 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
   }, [isSaved, event.id, router]);
 
   const handleShare = useCallback(() => {
-    navigator.clipboard.writeText(window.location.href);
+    const shareableUrl = `${window.location.origin}/?event=${event.id}`;
+    navigator.clipboard.writeText(shareableUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }, []);
+  }, [event.id]);
 
   // Lock body scroll & handle Escape key
   useEffect(() => {
