@@ -94,23 +94,44 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
   }, [event.id]);
 
   const handleSave = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { router.push("/login"); return; }
-    setSaveLoading(true);
     try {
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+
+      if (authError || !user) {
+        router.push("/login");
+        return;
+      }
+
+      setSaveLoading(true);
+
       if (isSaved) {
-        await supabase
+        const { error } = await supabase
           .from("saved_events")
           .delete()
           .eq("user_id", user.id)
           .eq("event_id", event.id);
-        setIsSaved(false);
+
+        if (error) {
+          console.error("Error unsaving event:", error);
+        } else {
+          setIsSaved(false);
+        }
       } else {
-        await supabase
+        const { error } = await supabase
           .from("saved_events")
           .insert({ user_id: user.id, event_id: event.id });
-        setIsSaved(true);
+
+        if (error) {
+          console.error("Error saving event:", error);
+        } else {
+          setIsSaved(true);
+        }
       }
+    } catch (err) {
+      console.error("Unexpected error in handleSave:", err);
     } finally {
       setSaveLoading(false);
     }
