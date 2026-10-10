@@ -179,6 +179,41 @@ function HomePageInner() {
     fetchEvents();
   }, [fetchEvents]);
 
+  // ── Safety Fallback: Redirect logged-in users with no primary_city to /onboarding ──
+  useEffect(() => {
+    async function checkUserOnboarding() {
+      // Prevent redirect loop if user chose "Skip for now" during this session
+      if (typeof window !== "undefined" && sessionStorage.getItem("onboarding_prompted")) {
+        return;
+      }
+
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (session?.user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("primary_city")
+            .eq("id", session.user.id)
+            .maybeSingle();
+
+          if (!profile?.primary_city) {
+            if (typeof window !== "undefined") {
+              sessionStorage.setItem("onboarding_prompted", "true");
+            }
+            router.push("/onboarding");
+          }
+        }
+      } catch {
+        // Ignore errors gracefully to avoid blocking page view
+      }
+    }
+
+    checkUserOnboarding();
+  }, [router]);
+
   // ── Deep-link: open modal from ?event=<id> on first data load ────────────────
   useEffect(() => {
     if (loading || allEvents.length === 0 || deepLinkHandled.current) return;

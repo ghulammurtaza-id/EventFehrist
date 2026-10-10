@@ -54,7 +54,18 @@ function LoginForm() {
 
       if (data?.user) {
         router.refresh();
-        router.push("/");
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("primary_city")
+          .eq("id", data.user.id)
+          .maybeSingle();
+
+        if (!profile?.primary_city) {
+          router.push("/onboarding");
+        } else {
+          router.push("/");
+        }
       }
     } catch {
       setErrorMessage("An unexpected error occurred. Please try again.");
