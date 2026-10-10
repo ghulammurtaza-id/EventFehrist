@@ -1,32 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabaseClient";
 import CityCombobox from "@/components/CityCombobox";
-import dynamic from "next/dynamic";
-import "react-quill-new/dist/quill.snow.css";
-
-const ReactQuill = dynamic(() => import("react-quill-new"), {
-  ssr: false,
-  loading: () => (
-    <div className="h-[250px] border border-slate-300 bg-slate-50 flex items-center justify-center text-sm text-slate-400">
-      Loading editor...
-    </div>
-  ),
-});
-
-const quillModules = {
-  toolbar: [
-    [{ header: [1, 2, 3, 4, false] }],
-    ["bold", "italic"],
-    [{ list: "ordered" }, { list: "bullet" }],
-    ["link"],
-    ["clean"],
-  ],
-};
 
 const CATEGORIES = [
   "Technology",
@@ -142,16 +121,22 @@ export default function SubmitEventPage() {
   const [audience, setAudience] = useState<string[]>([]);
   const [level, setLevel] = useState<string[]>([]);
   const [highlights, setHighlights] = useState<string[]>([]);
-  const [descTab, setDescTab] = useState<"write" | "preview">("write");
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const getPlainText = (html: string) =>
-    html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+  const isDescTooLong = form.description.length > 1500;
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const isDescTooLong = getPlainText(form.description).length > 1500;
+  useEffect(() => {
+    if (textareaRef.current) {
+      // Reset height to auto to get the correct scrollHeight
+      textareaRef.current.style.height = "auto";
+      // Set the new height based on content
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [form.description]);
 
   const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -179,14 +164,14 @@ export default function SubmitEventPage() {
     setIsLoading(true);
     setErrorMessage("");
 
-    const plainDesc = getPlainText(form.description);
-    if (!plainDesc) {
+    const trimmedDesc = form.description.trim();
+    if (!trimmedDesc) {
       setErrorMessage("Please enter an event description.");
       setIsLoading(false);
       return;
     }
 
-    if (plainDesc.length > 1500) {
+    if (form.description.length > 1500) {
       setErrorMessage("Description cannot exceed 1500 characters.");
       setIsLoading(false);
       return;
@@ -274,7 +259,6 @@ export default function SubmitEventPage() {
                   setAudience([]);
                   setLevel([]);
                   setHighlights([]);
-                  setDescTab("write");
                   setIsSubmitted(false);
                 }}
                 className="px-5 py-2 text-sm font-semibold border border-gray-300 bg-gray-100 text-slate-900 hover:bg-gray-200 hover:border-gray-400 transition-all rounded-none"
@@ -490,63 +474,29 @@ export default function SubmitEventPage() {
 
               {/* Row 6 — Description */}
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label htmlFor="description" className="block text-xs font-bold text-slate-900">
-                    Description <span className="text-red-500">*</span>
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setDescTab("write")}
-                      className={`cursor-pointer transition-colors ${descTab === "write"
-                        ? "text-sm font-semibold text-slate-900 border-b-2 border-[#186BA7] pb-1"
-                        : "text-sm text-slate-500 hover:text-slate-700 pb-1"
-                        }`}
-                    >
-                      Write
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDescTab("preview")}
-                      className={`cursor-pointer transition-colors ${descTab === "preview"
-                        ? "text-sm font-semibold text-slate-900 border-b-2 border-[#186BA7] pb-1"
-                        : "text-sm text-slate-500 hover:text-slate-700 pb-1"
-                        }`}
-                    >
-                      Preview
-                    </button>
-                  </div>
-                </div>
-
-                {descTab === "write" ? (
-                  <div className="quill-wrapper">
-                    <ReactQuill
-                      theme="snow"
-                      modules={quillModules}
-                      value={form.description}
-                      onChange={(val) => setForm((prev) => ({ ...prev, description: val }))}
-                      placeholder="Describe the event, agenda and what attendees can expect..."
-                    />
-                  </div>
-                ) : (
-                  <div className="min-h-[250px] max-h-[400px] overflow-y-auto p-4 border border-slate-300 bg-white ql-snow rounded-[2px]">
-                    {getPlainText(form.description) ? (
-                      <div
-                        className="ql-editor description-preview !p-0 text-sm text-slate-600 leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: form.description }}
-                      />
-                    ) : (
-                      <span className="text-slate-400 italic text-sm">No description to preview.</span>
-                    )}
-                  </div>
-                )}
+                <label htmlFor="description" className="block text-xs font-bold text-slate-900 mb-1.5">
+                  Description <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  required
+                  value={form.description}
+                  onChange={(e) => {
+                    setForm((prev) => ({ ...prev, description: e.target.value }));
+                    e.target.style.height = "auto";
+                    e.target.style.height = e.target.scrollHeight + "px";
+                  }}
+                  placeholder="Describe the event, agenda, and what attendees can expect..."
+                  className="w-full min-h-[100px] p-4 border border-slate-300 rounded-sm text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#186BA7]/20 focus:border-[#186BA7] transition-all resize-none overflow-hidden"
+                />
 
                 {/* Character Counter */}
                 <div
-                  className={`text-xs mt-1 text-right ${isDescTooLong ? "text-red-600 font-semibold" : "text-slate-400"
+                  className={`text-xs mt-1 text-right ${isDescTooLong ? "text-red-500 font-semibold" : "text-slate-400"
                     }`}
                 >
-                  {getPlainText(form.description).length} / 1500 characters
+                  {form.description.length} / 1500 characters
                 </div>
               </div>
 

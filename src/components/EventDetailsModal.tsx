@@ -335,7 +335,7 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
                 dangerouslySetInnerHTML={{ __html: event.description }}
               />
             ) : (
-              <p className="text-sm font-medium text-slate-600 leading-relaxed whitespace-pre-line">
+              <p className="text-sm font-medium text-slate-600 leading-relaxed whitespace-pre-wrap">
                 {event.description || "No description provided."}
               </p>
             )}
