@@ -9,7 +9,6 @@ export type EventCategory =
   | "Technology"
   | "Business"
   | "Arts & Culture"
-  | "Music"
   | "Sports"
   | "Education"
   | "Health & Wellness"
@@ -25,7 +24,6 @@ export type EventType =
   | "Competition"
   | "Exhibition"
   | "Seminar"
-  | "Concert"
   | "Festival"
   | "Webinar";
 
@@ -230,8 +228,8 @@ export const mockEvents: Event[] = [
     start_time: "19:00",
     end_time: "23:30",
     city: "Karachi",
-    category: "Music",
-    event_type: "Concert",
+    category: "Arts & Culture",
+    event_type: "Festival",
     location_details: "Creek Club Grounds, Phase 8 DHA, Karachi",
     registration_url: "https://bokingshai.com/coke-studio-finale-2026",
     organizer_name: "Coca-Cola Pakistan",
@@ -479,7 +477,6 @@ export const CATEGORIES: EventCategory[] = [
   "Technology",
   "Business",
   "Arts & Culture",
-  "Music",
   "Sports",
   "Education",
   "Health & Wellness",
@@ -496,7 +493,6 @@ export const EVENT_TYPES: EventType[] = [
   "Competition",
   "Exhibition",
   "Seminar",
-  "Concert",
   "Festival",
   "Webinar",
 ];

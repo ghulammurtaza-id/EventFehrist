@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Open_Sans } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -31,7 +31,7 @@ export default function AboutPage() {
           Fehrist is Pakistan&apos;s first centralized event discovery directory. Our
           mission is simple: to bridge the gap between event organizers and
           students, professionals, and enthusiasts across the country. No more
-          missing out on hackathons, workshops, or concerts because they were
+          missing out on hackathons, workshops, or conferences because they were
           buried in a social media feed.
         </p>
 

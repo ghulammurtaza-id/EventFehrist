@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Heart, ExternalLink, Share2, Flag } from "lucide-react";
-import { Event, getEventUIStatus } from "@/lib/mockData";
+import { type Event, getEventUIStatus } from "@/lib/mockData";
 import { supabase } from "@/lib/supabaseClient";
 
 interface EventDetailsModalProps {
@@ -86,28 +86,32 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
   useEffect(() => {
     let cancelled = false;
     async function checkSaved() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user || cancelled) return;
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user?.id || cancelled) return;
       const { data } = await supabase
         .from("saved_events")
         .select("id")
-        .eq("user_id", user.id)
+        .eq("user_id", session.user.id)
         .eq("event_id", event.id)
         .maybeSingle();
       if (!cancelled) setIsSaved(!!data);
     }
     checkSaved();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [event.id]);
 
   const handleSave = useCallback(async () => {
     try {
       const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
 
-      if (authError || !user) {
+      if (sessionError || !session?.user?.id) {
         // Not logged in — show toast instead of hard redirect
         showToast("Please login to save events");
         return;
@@ -120,26 +124,32 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
         const { error } = await supabase
           .from("saved_events")
           .delete()
-          .eq("user_id", user.id)
+          .eq("user_id", session.user.id)
           .eq("event_id", event.id);
 
         if (error) {
-          console.error("[handleSave] Error unsaving event (RLS/FK check):", error);
+          console.error("[handleSave] Error details:", error.message, error.code, error.details);
         } else {
           setIsSaved(false);
           router.refresh(); // revalidate dashboard saved list
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new Event("fehrist:saved_events_changed"));
+          }
         }
       } else {
         // Save: insert new row
         const { error } = await supabase
           .from("saved_events")
-          .insert({ user_id: user.id, event_id: event.id });
+          .insert({ user_id: session.user.id, event_id: event.id });
 
         if (error) {
-          console.error("[handleSave] Error saving event (RLS/FK check):", error);
+          console.error("[handleSave] Error details:", error.message, error.code, error.details);
         } else {
           setIsSaved(true);
           router.refresh(); // revalidate dashboard saved list
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new Event("fehrist:saved_events_changed"));
+          }
         }
       }
     } catch (err) {

@@ -711,8 +711,8 @@ function DashboardContent() {
                         }}
                         aria-current={savedPage === p ? "page" : undefined}
                         className={`w-8 h-8 flex items-center justify-center text-sm border rounded-sm transition-colors ${savedPage === p
-                            ? "bg-[#186BA7] text-white border-[#186BA7] font-semibold"
-                            : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                          ? "bg-[#186BA7] text-white border-[#186BA7] font-semibold"
+                          : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
                           }`}
                       >
                         {p}
@@ -771,7 +771,7 @@ function DashboardContent() {
                       </p>
                       <Link
                         href="/submit"
-                        className="inline-block text-xs sm:text-sm font-semibold border border-slate-300 bg-gray-100 text-slate-900 px-4 py-2 rounded-sm hover:bg-gray-200 transition-colors"
+                        className="inline-block text-xs sm:text-sm font-semibold border border-slate-300 bg-gray-100 text-slate-900 px-4 py-2 rounded-none hover:bg-gray-200 transition-colors"
                       >
                         Submit an Event
                       </Link>
@@ -938,8 +938,8 @@ function DashboardContent() {
                                 onClick={() => setSelectedAvatar(avatarId)}
                                 aria-label={`Select ${avatarId}`}
                                 className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full cursor-pointer transition-all duration-150 focus:outline-none p-0.5 ${isSelected
-                                    ? "ring-2 ring-[#186BA7] ring-offset-2 scale-105"
-                                    : "hover:scale-105 opacity-90 hover:opacity-100"
+                                  ? "ring-2 ring-[#186BA7] ring-offset-2 scale-105"
+                                  : "hover:scale-105 opacity-90 hover:opacity-100"
                                   }`}
                               >
                                 <div className="w-full h-full rounded-full overflow-hidden bg-slate-100">
@@ -998,8 +998,8 @@ function DashboardContent() {
                     {profileMessage && (
                       <div
                         className={`mb-4 text-xs font-medium px-3.5 py-2 rounded-sm ${profileMessage.type === "success"
-                            ? "bg-green-50 text-green-700 border border-green-200"
-                            : "bg-red-50 text-red-700 border border-red-200"
+                          ? "bg-green-50 text-green-700 border border-green-200"
+                          : "bg-red-50 text-red-700 border border-red-200"
                           }`}
                       >
                         {profileMessage.text}
@@ -1062,8 +1062,8 @@ function DashboardContent() {
                     {passwordMessage && (
                       <div
                         className={`mb-4 text-xs font-medium px-3.5 py-2 rounded-sm ${passwordMessage.type === "success"
-                            ? "bg-green-50 text-green-700 border border-green-200"
-                            : "bg-red-50 text-red-700 border border-red-200"
+                          ? "bg-green-50 text-green-700 border border-green-200"
+                          : "bg-red-50 text-red-700 border border-red-200"
                           }`}
                       >
                         {passwordMessage.text}

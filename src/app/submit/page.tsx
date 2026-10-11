@@ -11,7 +11,6 @@ const CATEGORIES = [
   "Technology",
   "Business",
   "Arts & Culture",
-  "Music",
   "Sports",
   "Education",
   "Health & Wellness",
@@ -28,7 +27,6 @@ const EVENT_TYPES = [
   "Competition",
   "Exhibition",
   "Seminar",
-  "Concert",
   "Festival",
   "Webinar",
 ];

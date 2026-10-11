@@ -1,5 +1,9 @@
 "use client";
 
+import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
+
 const audienceOptions = [
   "Open to All",
   "Students",
@@ -76,6 +80,76 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ filters, onFiltersChange }: SidebarProps) {
+  const [savedCount, setSavedCount] = useState<number | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const fetchSavedCount = useCallback(async (userId: string) => {
+    try {
+      const { count, error } = await supabase
+        .from("saved_events")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId);
+
+      if (!error && count !== null) {
+        setSavedCount(count);
+      }
+    } catch (err) {
+      console.error("Error fetching saved events count in sidebar:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    // Fetch initial session & count
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      const user = session?.user;
+      if (user) {
+        setIsLoggedIn(true);
+        fetchSavedCount(user.id);
+      } else {
+        setIsLoggedIn(false);
+        setSavedCount(null);
+      }
+    });
+
+    // Listen for auth state changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      const user = session?.user;
+      if (user) {
+        setIsLoggedIn(true);
+        fetchSavedCount(user.id);
+      } else {
+        setIsLoggedIn(false);
+        setSavedCount(null);
+      }
+    });
+
+    // Sync on tab focus or when event save/unsave triggers
+    const handleRefresh = () => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!mounted) return;
+        if (session?.user?.id) {
+          fetchSavedCount(session.user.id);
+        }
+      });
+    };
+
+    window.addEventListener("focus", handleRefresh);
+    window.addEventListener("fehrist:saved_events_changed", handleRefresh);
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+      window.removeEventListener("focus", handleRefresh);
+      window.removeEventListener("fehrist:saved_events_changed", handleRefresh);
+    };
+  }, [fetchSavedCount]);
+
   function toggleItem(
     key: keyof SidebarFilters,
     val: string
@@ -145,10 +219,26 @@ export default function Sidebar({ filters, onFiltersChange }: SidebarProps) {
         <h3 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-2">
           Saved Events
         </h3>
-        <p className="text-sm text-slate-500 dark:text-slate-300">
-          0 saved{" "}
-          <span className="text-xs text-slate-400 dark:text-slate-400">(Sign in to bookmark events)</span>
-        </p>
+        {isLoggedIn ? (
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm text-slate-500 dark:text-slate-300">
+              {savedCount !== null ? `${savedCount} saved` : "0 saved"}
+            </span>
+            <Link
+              href="/dashboard?tab=saved"
+              className="text-xs sm:text-sm font-medium text-[#186BA7] hover:underline flex items-center gap-1 whitespace-nowrap flex-shrink-0"
+            >
+              View Saved &rarr;
+            </Link>
+          </div>
+        ) : (
+          <p className="text-sm text-slate-500 dark:text-slate-300">
+            0 saved{" "}
+            <span className="text-xs text-slate-400 dark:text-slate-400">
+              (Sign in to bookmark events)
+            </span>
+          </p>
+        )}
       </div>
     </div>
   );

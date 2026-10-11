@@ -80,7 +80,6 @@ const CATEGORY_PILLS: (EventCategory | "All")[] = [
   "Technology",
   "Business",
   "Arts & Culture",
-  "Music",
   "Gaming",
   "Health & Wellness",
   "Sports",

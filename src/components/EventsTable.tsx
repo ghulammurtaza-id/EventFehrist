@@ -2,7 +2,7 @@
 // Receives already-filtered, already-paginated events from the page.
 // Supports full light & dark mode themes with elevated cards.
 
-import { Event, getEventUIStatus } from "@/lib/mockData";
+import { type Event, getEventUIStatus } from "@/lib/mockData";
 
 interface EventsTableProps {
   events: Event[];
