@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { setUserCity } from "@/app/actions/city";
 
 // Top 12 major cities in quick dropdown view
 export const TOP_CITIES = [
@@ -154,6 +155,7 @@ interface CityComboboxProps {
   selectedCity?: string;
   onCityChange?: (city: string) => void;
   className?: string;
+  syncUserCity?: boolean;
 }
 
 export default function CityCombobox({
@@ -162,8 +164,17 @@ export default function CityCombobox({
   selectedCity,
   onCityChange,
   className,
+  syncUserCity = false,
 }: CityComboboxProps) {
-  const value = propsValue ?? selectedCity ?? "";
+  const initialCity = propsValue ?? selectedCity ?? "";
+  const [internalValue, setInternalValue] = useState(initialCity);
+
+  useEffect(() => {
+    const val = propsValue ?? selectedCity ?? "";
+    if (val) setInternalValue(val);
+  }, [propsValue, selectedCity]);
+
+  const value = internalValue || initialCity;
   const onChange = propsOnChange ?? onCityChange ?? (() => {});
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -221,11 +232,21 @@ export default function CityCombobox({
 
   const handleSelect = useCallback(
     (city: string) => {
+      // 1. Update local React state immediately for snappy UI
+      setInternalValue(city);
+      if (syncUserCity) {
+        if (typeof document !== "undefined") {
+          document.cookie = `selected_city=${encodeURIComponent(city)}; path=/; max-age=31536000; SameSite=Lax`;
+        }
+        setUserCity(city).catch((err) => {
+          console.error("Failed to update user city on server:", err);
+        });
+      }
       onChange(city);
       setOpen(false);
       setQuery("");
     },
-    [onChange]
+    [onChange, syncUserCity]
   );
 
   return (
@@ -407,6 +428,15 @@ export default function CityCombobox({
         <AllCitiesModal
           selectedCity={value}
           onSelect={(city) => {
+            setInternalValue(city);
+            if (syncUserCity) {
+              if (typeof document !== "undefined") {
+                document.cookie = `selected_city=${encodeURIComponent(city)}; path=/; max-age=31536000; SameSite=Lax`;
+              }
+              setUserCity(city).catch((err) => {
+                console.error("Failed to update user city on server:", err);
+              });
+            }
             onChange(city);
             setModalOpen(false);
           }}

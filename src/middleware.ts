@@ -22,6 +22,15 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/', req.url))
   }
 
+  // Ensure default city cookie is set for future visits if not present
+  if (!req.cookies.has('selected_city')) {
+    res.cookies.set('selected_city', 'Karachi', {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: 'lax',
+    })
+  }
+
   return res
 }
 

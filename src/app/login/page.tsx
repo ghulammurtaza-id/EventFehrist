@@ -7,6 +7,7 @@ import { Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabaseClient";
+import { syncUserCityOnLogin } from "@/app/actions/city";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -53,6 +54,13 @@ function LoginForm() {
       }
 
       if (data?.user) {
+        // Sync city preference between guest cookie and user profile
+        try {
+          await syncUserCityOnLogin(data.user.id);
+        } catch (syncErr) {
+          console.error("City sync on login error:", syncErr);
+        }
+
         router.refresh();
 
         const { data: profile } = await supabase

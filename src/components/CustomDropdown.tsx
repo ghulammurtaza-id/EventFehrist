@@ -49,7 +49,7 @@ export default function CustomDropdown({
   return (
     <div
       ref={dropdownRef}
-      className={`relative w-full sm:w-[160px] ${className}`}
+      className={className ? `relative w-full sm:w-[160px] ${className}`.trim() : "relative w-full sm:w-[160px]"}
     >
       {/* Dropdown Button */}
       <button
@@ -63,8 +63,7 @@ export default function CustomDropdown({
       >
         <span className="truncate">{value}</span>
         <svg
-          className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-150 ${isOpen ? "rotate-180" : ""
-            }`}
+          className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-150${isOpen ? " rotate-180" : ""}`}
           viewBox="0 0 20 20"
           fill="currentColor"
           aria-hidden="true"
@@ -95,8 +94,8 @@ export default function CustomDropdown({
                   onChange(option);
                   setIsOpen(false);
                 }}
-                className={`px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 cursor-pointer flex items-center justify-between gap-2 transition-colors ${isSelected
-                    ? "font-semibold text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-700/40"
+                className={`px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 cursor-pointer flex items-center justify-between gap-2 transition-colors${isSelected
+                    ? " font-semibold text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-700/40"
                     : ""
                   }`}
               >

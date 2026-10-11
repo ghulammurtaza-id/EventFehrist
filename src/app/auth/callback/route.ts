@@ -19,7 +19,11 @@ export async function GET(request: NextRequest) {
     try {
       const cookieStore = cookies();
       const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
-      await supabase.auth.exchangeCodeForSession(code);
+      const { data } = await supabase.auth.exchangeCodeForSession(code);
+      if (data?.user) {
+        const { syncUserCityOnLogin } = await import("@/app/actions/city");
+        await syncUserCityOnLogin(data.user.id);
+      }
     } catch (error) {
       console.error("Auth callback error exchanging code for session:", error);
     }
