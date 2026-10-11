@@ -97,6 +97,7 @@ function DashboardContent() {
   const [email, setEmail] = useState("");
   const [primaryCity, setPrimaryCity] = useState("Karachi");
   const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Settings Tab state
   const [selectedAvatar, setSelectedAvatar] = useState<string>("avatar-1");
@@ -252,9 +253,13 @@ function DashboardContent() {
         // Fetch profile
         const { data: profile } = await supabase
           .from("profiles")
-          .select("full_name, email, primary_city, avatar_url")
+          .select("full_name, email, primary_city, avatar_url, role")
           .eq("id", currentUser.id)
           .maybeSingle();
+
+        if (profile?.role === "admin") {
+          setIsAdmin(true);
+        }
 
         const name =
           profile?.full_name ||
@@ -556,6 +561,15 @@ function DashboardContent() {
                     </button>
                   );
                 }
+              )}
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => router.push("/admin")}
+                  className="flex-1 sm:flex-initial text-center px-2 py-2 sm:px-4 text-xs sm:text-sm rounded-none transition-colors duration-200 cursor-pointer border bg-white text-slate-600 border-slate-300 hover:bg-slate-50 hover:text-slate-900 font-medium"
+                >
+                  Admin Panel
+                </button>
               )}
             </div>
 
