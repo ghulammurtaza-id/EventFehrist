@@ -38,7 +38,7 @@ const AUDIENCE_OPTIONS = [
 ] as const;
 
 const LEVEL_OPTIONS = [
-  "Beginner Friendly",
+  "Beginner",
   "Intermediate",
   "Advanced",
   "All Levels",
@@ -47,7 +47,6 @@ const LEVEL_OPTIONS = [
 const HIGHLIGHTS_OPTIONS = [
   "Certificate",
   "With Prizes",
-  "Networking",
 ] as const;
 
 function CheckboxItem({
@@ -186,9 +185,11 @@ export default function SubmitEventPage() {
         return;
       }
 
-      const audienceArray = audience;
-      const levelArray = level;
-      const highlightsArray = highlights;
+      // Apply backend fallbacks — ensures events without explicit tags are still
+      // discoverable by the "Open to All" / "All Levels" server-side filters.
+      const audienceArray = audience.length > 0 ? audience : ["Open to All"];
+      const levelArray = level.length > 0 ? level : ["All Levels"];
+      const highlightsArray = highlights; // highlights stays empty if none selected
 
       const { error } = await supabase.from("events").insert([
         {
@@ -209,9 +210,9 @@ export default function SubmitEventPage() {
           website_social: form.website || null,
           fee: form.fee || "Free",
           status: "Pending",
-          audience: audienceArray.length > 0 ? audienceArray : null,
-          level: levelArray.length > 0 ? levelArray : null,
-          highlights: highlightsArray.length > 0 ? highlightsArray : null,
+          audience: audienceArray,
+          level: levelArray,
+          highlights: highlightsArray.length > 0 ? highlightsArray : [],
         },
       ]);
 

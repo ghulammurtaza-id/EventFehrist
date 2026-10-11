@@ -179,10 +179,11 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
 
   const statusColor =
     uiStatus === "Registration Open" ? "text-[#3B853F]" :
-      uiStatus === "Happening Today" ? "text-[#9A3412]" :
-        uiStatus === "Completed" ? "text-slate-400" :
-          uiStatus === "Cancelled" ? "text-red-500" :
-            "text-slate-600";
+      uiStatus === "Registration Closed" ? "text-[#DC2626]" :
+        uiStatus === "Happening Today" ? "text-[#9A3412]" :
+          uiStatus === "Completed" ? "text-slate-400" :
+            uiStatus === "Cancelled" ? "text-red-500" :
+              "text-slate-600";
 
   // Shared base classes matching the app design system
   const btnBase =

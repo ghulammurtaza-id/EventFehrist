@@ -507,10 +507,11 @@ export const EVENT_TYPES: EventType[] = [
 export function getEventUIStatus(
   event: Event,
   todayISO: string
-): "Happening Today" | "Registration Open" | "Upcoming" | "Completed" | "Cancelled" | "Pending" {
+): "Happening Today" | "Registration Open" | "Registration Closed" | "Upcoming" | "Completed" | "Cancelled" | "Pending" {
   if (event.status === "cancelled") return "Cancelled";
   if (event.status === "completed") return "Completed";
   if (event.status === "pending") return "Pending";
+  if (event.reg_deadline && event.reg_deadline < todayISO) return "Registration Closed";
   if (event.event_date === todayISO) return "Happening Today";
   if (event.event_date > todayISO) return "Registration Open";
   return "Upcoming";

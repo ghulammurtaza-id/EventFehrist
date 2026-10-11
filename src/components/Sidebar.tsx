@@ -11,7 +11,7 @@ const audienceOptions = [
 ] as const;
 
 const levelOptions = [
-  "Beginner Friendly",
+  "Beginner",
   "Intermediate",
   "Advanced",
   "All Levels",
@@ -20,7 +20,6 @@ const levelOptions = [
 const highlightsOptions = [
   "Certificate",
   "With Prizes",
-  "Networking",
 ] as const;
 
 function CheckboxItem({

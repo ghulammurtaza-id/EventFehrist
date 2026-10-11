@@ -22,7 +22,7 @@ import CustomDropdown from "@/components/CustomDropdown";
 
 // Today's date in YYYY-MM-DD (PKT) — used for status badge derivation.
 // Evaluated once at module level to avoid hydration mismatch.
-const TODAY_ISO = new Date().toISOString().split("T")[0];
+const TODAY_ISO = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
 
 // DB row type alias
 type DbEvent = Database["public"]["Tables"]["events"]["Row"];
@@ -88,7 +88,7 @@ const CATEGORY_PILLS: (EventCategory | "All")[] = [
 ];
 
 // Date filter pills
-const DATE_PILLS = ["All", "Today", "This Week", "This Month", "Custom"] as const;
+const DATE_PILLS = ["All", "Today", "This Week", "This Month", "Next Month"] as const;
 type DateFilter = (typeof DATE_PILLS)[number];
 
 // Filter options for custom dropdowns
@@ -96,11 +96,28 @@ const TYPE_OPTIONS = ["All Types", ...EVENT_TYPES] as const;
 const PRICE_OPTIONS = ["Any Price", "Free", "Paid"] as const;
 const MODE_OPTIONS = ["Any Mode", "Physical", "Online", "Hybrid"] as const;
 
-// Helper — returns ISO date YYYY-MM-DD n days from today
+// Helper — returns ISO date YYYY-MM-DD n days from today (UTC-safe to prevent timezone offset skew)
 function addDays(iso: string, n: number): string {
-  const d = new Date(`${iso}T00:00:00`);
-  d.setDate(d.getDate() + n);
-  return d.toISOString().split("T")[0];
+  const [y, m, d] = iso.split("-").map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d + n));
+  return date.toISOString().split("T")[0];
+}
+
+// Helper — returns start (1st day) and end (last day) ISO date strings for the next month
+function getNextMonthRange(iso: string): { start: string; end: string } {
+  const parts = iso.split("-").map(Number);
+  const year = parts[0];
+  const month = parts[1]; // 1-indexed (1-12)
+  // Passing 1-indexed month into Date constructor targets the next month (0-indexed in JS)
+  const nextMonthStart = new Date(year, month, 1);
+  const nextYear = nextMonthStart.getFullYear();
+  const nextMonthNum = nextMonthStart.getMonth() + 1;
+
+  const start = `${nextYear}-${String(nextMonthNum).padStart(2, "0")}-01`;
+  const nextMonthEnd = new Date(nextYear, nextMonthNum, 0); // day 0 of following month is last day of next month
+  const end = `${nextYear}-${String(nextMonthNum).padStart(2, "0")}-${String(nextMonthEnd.getDate()).padStart(2, "0")}`;
+
+  return { start, end };
 }
 
 // Sidebar defaults
@@ -177,6 +194,49 @@ function HomePageInner() {
     }
   }, [selectedCity, pushParams]);
 
+  // ── Reset pagination to page 1 whenever ANY filter state changes ────────────
+  const prevFiltersRef = useRef({
+    searchQuery,
+    selectedDate,
+    selectedType,
+    selectedPrice,
+    selectedMode,
+    sidebarFilters,
+  });
+  useEffect(() => {
+    const prev = prevFiltersRef.current;
+    const hasFilterChanged =
+      prev.searchQuery !== searchQuery ||
+      prev.selectedDate !== selectedDate ||
+      prev.selectedType !== selectedType ||
+      prev.selectedPrice !== selectedPrice ||
+      prev.selectedMode !== selectedMode ||
+      prev.sidebarFilters !== sidebarFilters;
+
+    if (hasFilterChanged) {
+      prevFiltersRef.current = {
+        searchQuery,
+        selectedDate,
+        selectedType,
+        selectedPrice,
+        selectedMode,
+        sidebarFilters,
+      };
+      if (urlPage !== 1) {
+        pushParams({ page: 1 });
+      }
+    }
+  }, [
+    searchQuery,
+    selectedDate,
+    selectedType,
+    selectedPrice,
+    selectedMode,
+    sidebarFilters,
+    urlPage,
+    pushParams,
+  ]);
+
   // Smooth scroll to top of list when page changes
   useEffect(() => {
     if (isFirstMount.current) { isFirstMount.current = false; return; }
@@ -185,79 +245,118 @@ function HomePageInner() {
     }
   }, [urlPage]);
 
-  // ── Fetch from Supabase (count + page slice) ──────────────────────────────────
+  // ── Fetch from Supabase (single dynamic query: filters + order + pagination) ──
   const fetchEvents = useCallback(async () => {
     setLoading(true);
     setFetchError(null);
     try {
-      // Helper to apply identical filters to both count and data queries
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const applyFilters = (query: any) => {
-        let q = query;
-        if (urlCity !== "All Cities") {
-          q = q.eq("city", urlCity);
-        }
-        if (urlCategory !== "All") {
-          q = q.eq("category", urlCategory);
-        }
-        if (selectedType !== "All Types") {
-          q = q.eq("event_type", selectedType);
-        }
-        if (selectedPrice === "Free") {
-          q = q.or("fee.ilike.free,fee.eq.0,fee.is.null");
-        } else if (selectedPrice === "Paid") {
-          q = q.not("fee", "ilike", "free").neq("fee", "0").not("fee", "is", null);
-        }
-        if (selectedMode === "Online") {
-          q = q.or("event_type.eq.Webinar,venue_location.ilike.%online%,venue_location.ilike.%zoom%");
-        } else if (selectedMode === "Hybrid") {
-          q = q.ilike("venue_location", "%hybrid%");
-        } else if (selectedMode === "Physical") {
-          q = q
-            .neq("event_type", "Webinar")
-            .not("venue_location", "ilike", "%online%")
-            .not("venue_location", "ilike", "%zoom%")
-            .not("venue_location", "ilike", "%hybrid%");
-        }
-        if (selectedDate === "Today") {
-          q = q.eq("event_date", TODAY_ISO);
-        } else if (selectedDate === "This Week") {
-          q = q.gte("event_date", TODAY_ISO).lte("event_date", addDays(TODAY_ISO, 7));
-        } else if (selectedDate === "This Month") {
-          q = q.gte("event_date", TODAY_ISO).lte("event_date", addDays(TODAY_ISO, 30));
-        }
-        return q;
-      };
+      const todayPKT = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
 
-      // 1. Cheap count query — no rows returned, includes active filters
-      let countQuery = supabase
+      // ONE single dynamic query with exact count
+      let query = supabase
         .from("events")
-        .select("*", { count: "exact", head: true })
+        .select("*", { count: "exact" })
         .eq("status", "Approved");
-      countQuery = applyFilters(countQuery);
 
-      const { count, error: countErr } = await countQuery;
-      if (countErr) throw countErr;
-      const total = count ?? 0;
-      setTotalCount(total);
+      // ── Step 3: Base condition (Hidden Global Condition: Never show past events) ──
+      query = query.gte("event_date", todayPKT);
 
-      // 2. Fetch only the current page's 10 rows
-      const targetPage = Math.max(1, urlPage);
-      const maxPages = Math.max(1, Math.ceil(total / EVENTS_PER_PAGE));
-      const effectivePage = Math.min(targetPage, maxPages);
-      const from = (effectivePage - 1) * EVENTS_PER_PAGE;
-      const to = effectivePage * EVENTS_PER_PAGE - 1;
+      // ── Server-Side Search Filter (Bug 5: Server-side search) ──
+      if (searchQuery.trim()) {
+        query = query.ilike("event_name", `%${searchQuery.trim()}%`);
+      }
 
-      let dataQuery = supabase
-        .from("events")
-        .select("*")
-        .eq("status", "Approved")
+      // ── City & Category Filters ──
+      if (urlCity !== "All Cities") {
+        query = query.eq("city", urlCity);
+      }
+      if (urlCategory !== "All") {
+        query = query.eq("category", urlCategory);
+      }
+
+      // ── Event Type, Price, Mode Filters ──
+      if (selectedType !== "All Types") {
+        query = query.eq("event_type", selectedType);
+      }
+      if (selectedPrice === "Free") {
+        query = query.or("fee.ilike.free,fee.eq.0,fee.is.null");
+      } else if (selectedPrice === "Paid") {
+        query = query.not("fee", "ilike", "free").neq("fee", "0").not("fee", "is", null);
+      }
+      if (selectedMode === "Online") {
+        query = query.or("event_type.eq.Webinar,venue_location.ilike.%online%,venue_location.ilike.%zoom%");
+      } else if (selectedMode === "Hybrid") {
+        query = query.ilike("venue_location", "%hybrid%");
+      } else if (selectedMode === "Physical") {
+        query = query
+          .neq("event_type", "Webinar")
+          .not("venue_location", "ilike", "%online%")
+          .not("venue_location", "ilike", "%zoom%")
+          .not("venue_location", "ilike", "%hybrid%");
+      }
+
+      // ── Date Filters (Bug 2: PKT timezone-safe todayPKT) ──
+      if (selectedDate === "Today") {
+        query = query.eq("event_date", todayPKT);
+        query = query.or(`registration_deadline.gte.${todayPKT},registration_deadline.is.null`);
+      } else if (selectedDate === "This Week") {
+        query = query.gte("event_date", todayPKT).lte("event_date", addDays(todayPKT, 7));
+        query = query.or(`registration_deadline.gte.${todayPKT},registration_deadline.is.null`);
+      } else if (selectedDate === "This Month") {
+        query = query.gte("event_date", todayPKT).lte("event_date", addDays(todayPKT, 30));
+        query = query.or(`registration_deadline.gte.${todayPKT},registration_deadline.is.null`);
+      } else if (selectedDate === "Next Month") {
+        const nextMonth = getNextMonthRange(todayPKT);
+        query = query.gte("event_date", nextMonth.start).lte("event_date", nextMonth.end);
+        query = query.or(`registration_deadline.gte.${todayPKT},registration_deadline.is.null`);
+      }
+
+      // ── Server-Side Audience, Level, and Highlights Filters (Bug 4: guarded against empty arrays) ──
+      //
+      // Audience: always inject "Open to All" so that events which defaulted to
+      // ["Open to All"] are never hidden when a specific audience is selected.
+      // e.g. user picks "Students" → query includes ["Students", "Open to All"]
+      if (sidebarFilters.audience.length > 0) {
+        const audienceQuery = [
+          ...new Set([...sidebarFilters.audience, "Open to All"]),
+        ];
+        query = query.overlaps("audience", audienceQuery);
+      }
+
+      // Level: same inclusive pattern — inject "All Levels" so events that
+      // didn't specify a skill level remain visible to any level filter.
+      // e.g. user picks "Beginner" → query includes ["Beginner", "All Levels"]
+      if (sidebarFilters.level.length > 0) {
+        const levelQuery = [
+          ...new Set([...sidebarFilters.level, "All Levels"]),
+        ];
+        query = query.overlaps("level", levelQuery);
+      }
+
+      // Highlights: a single .overlaps() call provides OR logic — an event is
+      // included if its highlights array shares *at least one* value with the
+      // selected highlights. No boolean columns needed; highlights is text[].
+      if (sidebarFilters.highlights.length > 0) {
+        query = query.overlaps("highlights", sidebarFilters.highlights);
+      }
+
+      // ── Step 2: Sorting Strategy (Urgency + Deterministic + 3rd Tie-Breaker - Bug 3) ──
+      query = query
         .order("event_date", { ascending: true })
-        .range(from, to);
-      dataQuery = applyFilters(dataQuery);
+        .order("registration_deadline", { ascending: true, nullsFirst: false })
+        .order("created_at", { ascending: false });
 
-      const { data, error } = await dataQuery;
+      // ── Pagination: Applied at the very end of the single query ──
+      const targetPage = Math.max(1, urlPage);
+      const from = (targetPage - 1) * EVENTS_PER_PAGE;
+      const to = from + EVENTS_PER_PAGE - 1;
+      query = query.range(from, to);
+
+      // Execute single query
+      const { data, count, error } = await query;
       if (error) throw error;
+
+      setTotalCount(count ?? 0);
       setPageEvents((data || []).map(mapDbRow));
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to load events.";
@@ -265,7 +364,17 @@ function HomePageInner() {
     } finally {
       setLoading(false);
     }
-  }, [urlCity, urlCategory, urlPage, selectedType, selectedDate, selectedPrice, selectedMode]);
+  }, [
+    urlCity,
+    urlCategory,
+    urlPage,
+    searchQuery,
+    selectedType,
+    selectedDate,
+    selectedPrice,
+    selectedMode,
+    sidebarFilters,
+  ]);
 
   useEffect(() => {
     fetchEvents();
@@ -326,81 +435,8 @@ function HomePageInner() {
     }
   }, [loading, pageEvents, searchParams, pathname, router]);
 
-  // ── Client-side filter on the current 10-row page slice ──────────────────────
-  // city & category are already filtered server-side; these apply locally.
-  const filteredEvents = useMemo(() => {
-    const todayStart = TODAY_ISO;
-    const weekEnd = addDays(TODAY_ISO, 7);
-    const monthEnd = addDays(TODAY_ISO, 30);
-
-    return pageEvents.filter((event) => {
-      // Event type filter
-      if (selectedType !== "All Types" && event.event_type !== selectedType) return false;
-
-      // Price filter
-      if (selectedPrice === "Free") {
-        const fee = event.fee || "";
-        const isFree = !fee || fee.toLowerCase() === "free" || fee === "0";
-        if (!isFree) return false;
-      } else if (selectedPrice === "Paid") {
-        const fee = event.fee || "";
-        const isFree = !fee || fee.toLowerCase() === "free" || fee === "0";
-        if (isFree) return false;
-      }
-
-      // Mode filter
-      if (selectedMode !== "Any Mode" && event.mode !== selectedMode) return false;
-
-      // Date filter
-      if (selectedDate === "Today" && event.event_date !== todayStart) return false;
-      if (selectedDate === "This Week" &&
-        (event.event_date < todayStart || event.event_date > weekEnd)) return false;
-      if (selectedDate === "This Month" &&
-        (event.event_date < todayStart || event.event_date > monthEnd)) return false;
-
-      // Sidebar: Audience filter
-      if (sidebarFilters.audience.length > 0) {
-        const eventAudience = (event.tags || []).map((t) => t.toLowerCase());
-        const matches = sidebarFilters.audience.some((a) =>
-          eventAudience.some((ea) => ea.includes(a.toLowerCase()))
-        );
-        if (!matches) return false;
-      }
-
-      // Sidebar: Level filter
-      if (sidebarFilters.level.length > 0) {
-        const eventTags = (event.tags || []).map((t) => t.toLowerCase());
-        const matches = sidebarFilters.level.some((l) =>
-          eventTags.some((et) => et.includes(l.toLowerCase()))
-        );
-        if (!matches) return false;
-      }
-
-      // Sidebar: Highlights filter
-      if (sidebarFilters.highlights.length > 0) {
-        const eventTags = (event.tags || []).map((t) => t.toLowerCase());
-        const hasCert = event.certificate;
-        const matches = sidebarFilters.highlights.some((h) => {
-          if (h === "Certificate") return hasCert;
-          return eventTags.some((et) => et.includes(h.toLowerCase()));
-        });
-        if (!matches) return false;
-      }
-
-      // Search
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const match =
-          event.title.toLowerCase().includes(q) ||
-          event.organizer_name.toLowerCase().includes(q) ||
-          event.city.toLowerCase().includes(q) ||
-          event.category.toLowerCase().includes(q);
-        if (!match) return false;
-      }
-
-      return true;
-    });
-  }, [pageEvents, selectedDate, selectedType, selectedPrice, selectedMode, sidebarFilters, searchQuery]);
+  // ── Filtered events: search is now handled server-side in Supabase query ───────
+  const filteredEvents = pageEvents;
 
   // ── Pagination derived values ─────────────────────────────────────────────────
   const totalPages = Math.max(1, Math.ceil(totalCount / EVENTS_PER_PAGE));
@@ -414,6 +450,13 @@ function HomePageInner() {
   const cityLabel = urlCity === "All Cities" ? "All Events" : `${urlCity} Events`;
 
   // ── Helpers ───────────────────────────────────────────────────────────────────
+  function handleSearchChange(query: string) {
+    setSearchQuery(query);
+    if (urlPage !== 1) {
+      pushParams({ page: 1 });
+    }
+  }
+
   function resetFilters() {
     setSearchQuery("");
     setSelectedDate("All");
@@ -462,6 +505,13 @@ function HomePageInner() {
 
   function handleDatePill(d: DateFilter) {
     setSelectedDate(d);
+    if (urlPage !== 1) {
+      pushParams({ page: 1 });
+    }
+  }
+
+  function handleSidebarFiltersChange(f: SidebarFilters) {
+    setSidebarFilters(f);
     if (urlPage !== 1) {
       pushParams({ page: 1 });
     }
@@ -546,7 +596,7 @@ function HomePageInner() {
             placeholder="Search events, organizers, keywords..."
             value={searchQuery}
             onChange={(e) => {
-              setSearchQuery(e.target.value);
+              handleSearchChange(e.target.value);
             }}
             className="flex-1 px-3 py-2 text-sm border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-800/90 text-slate-900 dark:text-slate-100 outline-none focus:border-[#186BA7] dark:focus:border-[#60a5fa] placeholder:text-slate-400 dark:placeholder:text-slate-400 transition-colors min-w-0"
             style={{ borderRadius: 0 }}
@@ -643,7 +693,7 @@ function HomePageInner() {
 
           {mobileSidebarOpen && (
             <div className="mt-3">
-              <Sidebar filters={sidebarFilters} onFiltersChange={(f) => { setSidebarFilters(f); }} />
+              <Sidebar filters={sidebarFilters} onFiltersChange={handleSidebarFiltersChange} />
             </div>
           )}
         </div>
@@ -653,7 +703,7 @@ function HomePageInner() {
 
           {/* Left Sidebar — desktop only */}
           <aside className="hidden md:block w-[240px] flex-shrink-0">
-            <Sidebar filters={sidebarFilters} onFiltersChange={(f) => { setSidebarFilters(f); }} />
+            <Sidebar filters={sidebarFilters} onFiltersChange={handleSidebarFiltersChange} />
           </aside>
 
           {/* Right: Event count + Table + Pagination */}

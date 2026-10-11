@@ -37,6 +37,8 @@ function StatusBadge({ status }: { status: string }) {
   let textColor = "text-slate-600 dark:text-slate-300";
   if (status === "Registration Open") {
     textColor = "text-[#3B853F]";
+  } else if (status === "Registration Closed") {
+    textColor = "text-[#DC2626] dark:text-red-400";
   } else if (status === "Happening Today" || status === "Upcoming") {
     textColor = "text-[#9A3412] dark:text-[#fb923c]";
   } else if (status === "Completed") {
