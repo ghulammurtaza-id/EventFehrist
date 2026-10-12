@@ -3,7 +3,15 @@
 // Matches the `events` table schema defined in brief.md.
 // Replace with Supabase queries when the database is connected.
 
-export type EventStatus = "pending" | "approved" | "completed" | "cancelled";
+export type EventStatus =
+  | "Pending"
+  | "Approved"
+  | "Rejected"
+  | "Needs Revision"
+  | "pending"
+  | "approved"
+  | "completed"
+  | "cancelled";
 
 export type EventCategory =
   | "Technology"

@@ -1,4 +1,4 @@
-import type { Event, EventCategory } from "@/lib/mockData";
+import type { Event, EventCategory, EventStatus } from "@/lib/mockData";
 import type { Database } from "@/lib/supabaseClient";
 
 // DB row type alias matching events table row in Supabase
@@ -41,7 +41,7 @@ export function mapDbRow(row: DbEvent): Event {
     registration_url: row.registration_url || "",
     organizer_name: row.organizer_name,
     is_verified: false,
-    status: "approved",
+    status: (row.status as EventStatus) || "Pending",
     submitted_by_user_id: row.organizer_id || "",
     fee: row.fee || "Free",
     eligibility: undefined,

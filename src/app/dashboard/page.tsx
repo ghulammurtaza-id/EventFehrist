@@ -3,16 +3,17 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Pencil, Check, LogOut } from "lucide-react";
+import { Check, LogOut } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SubmissionsTable from "@/components/SubmissionsTable";
 import CityCombobox from "@/components/CityCombobox";
 import EventDetailsModal from "@/components/EventDetailsModal";
 import Button from "@/components/Button";
 import { supabase } from "@/lib/supabaseClient";
 import type { Database } from "@/lib/supabaseClient";
 import type { User } from "@supabase/supabase-js";
-import type { Event, EventCategory } from "@/lib/mockData";
+import type { Event, EventCategory, EventStatus } from "@/lib/mockData";
 
 const DEFAULT_AVATARS = [
   "avatar-1",
@@ -61,7 +62,7 @@ function mapDbRow(row: Partial<DbEvent> & { id: string; event_name: string }): E
     registration_url: row.registration_url || "",
     organizer_name: row.organizer_name || "Organizer",
     is_verified: false,
-    status: "approved",
+    status: (row.status as EventStatus) || "Pending",
     submitted_by_user_id: row.organizer_id || "",
     fee: row.fee?.toLowerCase().trim() === "free" ? "Free" : (row.fee || "Free"),
     eligibility: undefined,
@@ -217,9 +218,10 @@ function DashboardContent() {
         .limit(10);
 
       if (error) {
-        console.error("Error fetching submissions:", error);
+        console.error("[Dashboard] Error fetching submissions:", error);
         setSubmissions([]);
       } else if (data) {
+        console.log("[Dashboard] Fetched submissions for user", userId, data);
         setSubmissions(data as SubmissionItem[]);
       } else {
         setSubmissions([]);
@@ -774,125 +776,10 @@ function DashboardContent() {
 
                 {/* Table structure */}
                 <div className="border border-slate-200 rounded-t-sm rounded-b-none overflow-hidden bg-white shadow-sm">
-                  {isLoadingSubmissions ? (
-                    <div className="p-10 text-center text-sm text-slate-500">
-                      Loading your submissions...
-                    </div>
-                  ) : submissions.length === 0 ? (
-                    <div className="p-10 text-center">
-                      <p className="text-sm text-slate-500 mb-3">
-                        You have not submitted any events yet.
-                      </p>
-                      <Link
-                        href="/submit"
-                        className="inline-block text-xs sm:text-sm font-semibold border border-slate-300 bg-gray-100 text-slate-900 px-4 py-2 rounded-none hover:bg-gray-200 transition-colors"
-                      >
-                        Submit an Event
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-sm border-collapse min-w-[340px] md:min-w-[600px]">
-                        <thead>
-                          <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 text-xs font-semibold">
-                            <th className="py-3 px-4">Event Name</th>
-                            <th className="py-3 px-4 hidden sm:table-cell">Date</th>
-                            <th className="py-3 px-4 hidden md:table-cell">City</th>
-                            <th className="py-3 px-4">Status</th>
-                            <th className="py-3 px-4 pr-6 text-left">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200">
-                          {submissions.map((item) => {
-                            const eventTitle = item.event_name || "Untitled Event";
-                            const eventDate = formatDate(item.event_date);
-                            const city = item.city || "Pakistan";
-                            const rawStatus = (item.status || "Pending").trim();
-                            const lowerStatus = rawStatus.toLowerCase();
-
-                            const isApproved = lowerStatus === "approved";
-                            const isPending = lowerStatus === "pending";
-                            const isNeedsRevision =
-                              lowerStatus === "needs revision" ||
-                              lowerStatus === "needs_revision" ||
-                              lowerStatus === "revision";
-                            const isRejected = lowerStatus === "rejected";
-
-                            const badgeCls = isApproved
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : isPending
-                                ? "bg-amber-50 text-amber-700 border-amber-200"
-                                : isNeedsRevision
-                                  ? "bg-orange-50 text-orange-700 border-orange-200"
-                                  : isRejected
-                                    ? "bg-red-50 text-red-700 border-red-200"
-                                    : "bg-slate-100 text-slate-700 border-slate-300";
-
-                            const badgeLabel: React.ReactNode = isApproved
-                              ? "Approved"
-                              : isPending
-                                ? "Pending"
-                                : isNeedsRevision
-                                  ? (
-                                    <>
-                                      Needs <span className="block sm:inline">Revision</span>
-                                    </>
-                                  )
-                                  : isRejected
-                                    ? "Rejected"
-                                    : rawStatus;
-
-                            return (
-                              <React.Fragment key={item.id}>
-                                <tr
-                                  className="hover:bg-slate-50/70 transition-colors"
-                                >
-                                  <td className="py-3.5 px-4 font-bold text-slate-900">
-                                    <div>{eventTitle}</div>
-                                    <div className="sm:hidden text-xs text-slate-500 font-normal mt-1">
-                                      {eventDate}
-                                    </div>
-                                  </td>
-                                  <td className="py-3.5 px-4 text-slate-600 whitespace-nowrap hidden sm:table-cell align-top">
-                                    {eventDate}
-                                  </td>
-                                  <td className="py-3.5 px-4 text-slate-600 hidden md:table-cell align-top">
-                                    {city}
-                                  </td>
-                                  <td className="py-3.5 px-4 whitespace-nowrap align-top">
-                                    <span
-                                      className={`inline-block text-center text-xs px-2 py-1 sm:text-sm sm:px-3 sm:py-1.5 font-medium rounded-sm border leading-tight ${badgeCls}`}
-                                    >
-                                      {badgeLabel}
-                                    </span>
-                                  </td>
-                                  <td className="py-3.5 px-4 pr-6 text-left whitespace-nowrap min-w-[100px] align-top">
-                                    <Link
-                                      href={`/submit?edit=${item.id}`}
-                                      className="flex items-center gap-2 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium border border-slate-300 rounded-sm bg-white text-slate-900 hover:bg-slate-50 transition-colors cursor-pointer"
-                                    >
-                                      <Pencil className="w-3 h-3 sm:w-4 sm:h-4" />
-                                      Edit
-                                    </Link>
-                                  </td>
-                                </tr>
-                                {isNeedsRevision && item.review_notes && (
-                                  <tr key={`${item.id}-feedback`} className="border-t-0 bg-transparent">
-                                    <td colSpan={5} className="px-4 pb-3 pt-0 border-t-0">
-                                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 sm:p-4 pr-4 sm:pr-6 mt-2 mb-3 shadow-sm">
-                                        <p className="font-bold text-orange-900 text-sm mb-2">Reviewer feedback:</p>
-                                        <p className="text-orange-800 text-sm leading-relaxed break-words">{item.review_notes}</p>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                )}
-                              </React.Fragment>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+                  <SubmissionsTable
+                    submissions={submissions}
+                    isLoading={isLoadingSubmissions}
+                  />
                 </div>
               </section>
             )}

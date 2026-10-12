@@ -8,7 +8,7 @@ import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabaseClient";
 import type { Database } from "@/lib/supabaseClient";
 import type { User } from "@supabase/supabase-js";
-import type { Event, EventCategory } from "@/lib/mockData";
+import type { Event, EventCategory, EventStatus } from "@/lib/mockData";
 import EventDetailsModal from "@/components/EventDetailsModal";
 
 const TODAY_ISO = new Date().toISOString().split("T")[0];
@@ -47,7 +47,7 @@ function mapDbRow(row: Partial<DbEvent> & { id: string; event_name: string }): E
     registration_url: row.registration_url || "",
     organizer_name: row.organizer_name || "Organizer",
     is_verified: false,
-    status: "approved",
+    status: (row.status as EventStatus) || "Pending",
     submitted_by_user_id: row.organizer_id || "",
     fee: row.fee?.toLowerCase().trim() === "free" ? "Free" : (row.fee || "Free"),
     eligibility: undefined,
