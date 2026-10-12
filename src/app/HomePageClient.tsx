@@ -21,6 +21,7 @@ import CustomDropdown from "@/components/CustomDropdown";
 
 import { mapDbRow, type DbEvent } from "@/lib/mappers";
 import { setUserCity } from "@/app/actions/city";
+import type { Announcement } from "@/app/actions/announcements";
 
 // Today's date in YYYY-MM-DD (PKT) — used for status badge derivation.
 export const TODAY_ISO = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
@@ -78,6 +79,7 @@ export interface HomePageClientProps {
   initialEvents?: Event[];
   initialTotalCount?: number;
   shouldSetDefaultCookie?: boolean;
+  announcement?: Announcement | null;
 }
 
 // ── Inner component (needs Suspense because it calls useSearchParams) ────────
@@ -86,6 +88,7 @@ function HomePageInner({
   initialEvents = [],
   initialTotalCount = 0,
   shouldSetDefaultCookie = false,
+  announcement,
 }: HomePageClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -99,7 +102,6 @@ function HomePageInner({
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   // ── UI state ────────────────────────────────────────────────────────────────
-  const [showAnnouncement, setShowAnnouncement] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [eventNotFoundToast, setEventNotFoundToast] = useState(false);
@@ -554,9 +556,7 @@ function HomePageInner({
     <div className="min-h-screen flex flex-col bg-white dark:bg-[#0b1120] text-slate-900 dark:text-slate-100 transition-colors">
       <Navbar />
 
-      {showAnnouncement && (
-        <AnnouncementBar onClose={() => setShowAnnouncement(false)} />
-      )}
+      <AnnouncementBar announcement={announcement} />
 
       <main className="flex-1 max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-14 py-8">
         <div className="mb-5 md:mb-8">

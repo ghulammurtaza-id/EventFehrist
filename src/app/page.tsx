@@ -4,6 +4,7 @@ import type { Database } from "@/lib/supabaseClient";
 import HomePageClient from "./HomePageClient";
 import { mapDbRow } from "@/lib/mappers";
 import type { Event } from "@/lib/mockData";
+import type { Announcement } from "@/app/actions/announcements";
 
 export default async function HomePage(props: {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -110,12 +111,29 @@ export default async function HomePage(props: {
     console.error("Failed to fetch initial events on server:", err);
   }
 
+  // Fetch active announcement server-side for optimal performance
+  let activeAnnouncement: Announcement | null = null;
+  try {
+    const { data: announcementData, error: announcementError } = await supabase
+      .from("announcements")
+      .select("*")
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (!announcementError && announcementData) {
+      activeAnnouncement = announcementData as Announcement;
+    }
+  } catch (err) {
+    console.error("Failed to fetch active announcement on server:", err);
+  }
+
   return (
     <HomePageClient
       initialCity={initialCity}
       initialEvents={initialEvents}
       initialTotalCount={initialTotalCount}
       shouldSetDefaultCookie={shouldSetCookie}
+      announcement={activeAnnouncement}
     />
   );
 }

@@ -183,6 +183,13 @@ function SubmitEventForm() {
           return;
         }
 
+        // Rejected events cannot be edited
+        if (data.status === "Rejected" || (data.status && data.status.toLowerCase() === "rejected")) {
+          setErrorMessage("This event has been rejected and cannot be edited or resubmitted.");
+          setIsUnauthorized(true);
+          return;
+        }
+
         // Pre-fill form state with fetched event data
         setForm({
           title: data.event_name || "",

@@ -85,6 +85,10 @@ export default function SubmissionsTable({
               lowerStatus === "needs revision" ||
               lowerStatus === "needs_revision";
 
+            const isRejected =
+              rawStatus === "Rejected" ||
+              lowerStatus === "rejected";
+
             const getStatusBadge = (status: string) => {
               if (status === "Needs Revision" || status.toLowerCase() === "needs revision" || status.toLowerCase() === "needs_revision") {
                 return (
@@ -134,25 +138,52 @@ export default function SubmissionsTable({
                     {getStatusBadge(rawStatus)}
                   </td>
                   <td className="py-3.5 px-4 pr-6 text-left whitespace-nowrap align-top">
-                    <Link
-                      href={`/submit-event?id=${item.id}&mode=edit`}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 text-xs sm:text-sm font-medium border border-slate-300 rounded-sm bg-white text-slate-900 hover:bg-slate-50 transition-colors w-fit"
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                      Edit
-                    </Link>
+                    {isRejected ? (
+                      <button
+                        type="button"
+                        disabled
+                        aria-disabled="true"
+                        title="Rejected events cannot be edited"
+                        className="inline-flex items-center gap-2 px-3 py-1.5 text-xs sm:text-sm font-medium border border-slate-300 rounded-sm bg-slate-50 text-slate-500 opacity-50 cursor-not-allowed select-none w-fit"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                        Edit
+                      </button>
+                    ) : (
+                      <Link
+                        href={`/submit-event?id=${item.id}&mode=edit`}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 text-xs sm:text-sm font-medium border border-slate-300 rounded-sm bg-white text-slate-900 hover:bg-slate-50 transition-colors w-fit"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                        Edit
+                      </Link>
+                    )}
                   </td>
                 </tr>
 
-                {/* Reviewer feedback box when event needs revision */}
-                {isNeedsRevision && item.review_notes && (
+                {/* Reviewer feedback or Rejection reason box */}
+                {(isNeedsRevision || isRejected) && item.review_notes && (
                   <tr key={`${item.id}-feedback`} className="border-t-0 bg-transparent">
                     <td colSpan={5} className="px-4 pb-3 pt-0 border-t-0">
-                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 sm:p-4 pr-4 sm:pr-6 mt-2 mb-3 shadow-sm">
-                        <p className="font-bold text-orange-900 text-sm mb-2">
-                          Reviewer feedback:
+                      <div
+                        className={`rounded-lg p-3 sm:p-4 pr-4 sm:pr-6 mt-2 mb-3 shadow-sm border ${
+                          isRejected
+                            ? "bg-red-50 border-red-200"
+                            : "bg-orange-50 border-orange-200"
+                        }`}
+                      >
+                        <p
+                          className={`font-bold text-sm mb-2 ${
+                            isRejected ? "text-red-900" : "text-orange-900"
+                          }`}
+                        >
+                          {isRejected ? "Rejection Reason:" : "Reviewer feedback:"}
                         </p>
-                        <p className="text-orange-800 text-sm leading-relaxed break-words">
+                        <p
+                          className={`text-sm leading-relaxed break-words ${
+                            isRejected ? "text-red-800" : "text-orange-800"
+                          }`}
+                        >
                           {item.review_notes}
                         </p>
                       </div>

@@ -692,6 +692,7 @@ function DashboardContent() {
                                     >
                                       View
                                     </button>
+
                                   </div>
                                 </td>
                               </tr>
@@ -1007,6 +1008,8 @@ function DashboardContent() {
           }}
         />
       )}
+
+
 
       <Footer />
     </div>

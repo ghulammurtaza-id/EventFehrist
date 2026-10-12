@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Heart, ExternalLink, Share2, Flag } from "lucide-react";
 import { type Event, getEventUIStatus } from "@/lib/mockData";
 import { supabase } from "@/lib/supabaseClient";
+import ReportModal from "@/components/ReportModal";
+import LoginModal from "@/components/LoginModal";
 
 interface EventDetailsModalProps {
   event: Event;
@@ -76,10 +78,25 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
   const [saveToast, setSaveToast] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  // ── Report modal state ───────────────────────────────────────────────────────
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+
   // Helper: show a brief toast message then clear it
   const showToast = (msg: string) => {
     setSaveToast(msg);
     setTimeout(() => setSaveToast(null), 3000);
+  };
+
+  const handleReportClick = async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.user) {
+      setIsLoginOpen(true);
+    } else {
+      setIsReportOpen(true);
+    }
   };
 
   // Check on mount whether this event is already saved by the current user
@@ -429,10 +446,10 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
           {/* Report */}
           <button
             type="button"
-            onClick={() => alert("Thank you. We will review this event.")}
-            className={`${btnBase} border-slate-300`}
+            onClick={handleReportClick}
+            className="px-4 py-2 text-sm font-medium border border-red-300 rounded-sm bg-white text-red-600 hover:bg-red-50 hover:border-red-400 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
           >
-            <Flag className="w-4 h-4" />
+            <Flag className="w-3.5 h-3.5 text-red-600" />
             Report
           </button>
 
@@ -448,6 +465,22 @@ export default function EventDetailsModal({ event, todayISO, onClose }: EventDet
         </div>
 
       </div>
+
+      {/* ── Report Modal ──────────────────────────────────────────────────────── */}
+      <ReportModal
+        isOpen={isReportOpen}
+        onClose={() => setIsReportOpen(false)}
+        eventId={event.id}
+        eventName={event.title}
+      />
+
+      {/* ── Login Modal ───────────────────────────────────────────────────────── */}
+      <LoginModal
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
+        message="Please sign in to report this event."
+        onSuccess={() => setIsReportOpen(true)}
+      />
     </div>
   );
 }
