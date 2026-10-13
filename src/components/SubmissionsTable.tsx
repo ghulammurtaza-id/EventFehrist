@@ -13,21 +13,16 @@ export interface SubmissionItem {
   review_notes?: string | null;
 }
 
+import { formatDatePKT } from "@/lib/dateUtils";
+
 interface SubmissionsTableProps {
   submissions: SubmissionItem[];
   isLoading?: boolean;
 }
 
-// Format date helper like "Oct 5"
+// Format date helper like "Oct 5" strictly in PKT
 function formatDate(dateStr?: string) {
-  if (!dateStr) return "TBD";
-  try {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  } catch {
-    return dateStr;
-  }
+  return formatDatePKT(dateStr);
 }
 
 export default function SubmissionsTable({

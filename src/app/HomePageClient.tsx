@@ -22,9 +22,10 @@ import CustomDropdown from "@/components/CustomDropdown";
 import { mapDbRow, type DbEvent } from "@/lib/mappers";
 import { setUserCity } from "@/app/actions/city";
 import type { Announcement } from "@/app/actions/announcements";
+import { getTodayPKT } from "@/lib/dateUtils";
 
 // Today's date in YYYY-MM-DD (PKT) — used for status badge derivation.
-export const TODAY_ISO = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
+export const TODAY_ISO = getTodayPKT();
 
 // Category pills shown in the filter row
 const CATEGORY_PILLS: (EventCategory | "All")[] = [
@@ -123,6 +124,8 @@ function HomePageInner({
   const listContainerRef = useRef<HTMLDivElement>(null);
   const isFirstMount = useRef(true);
   const deepLinkHandled = useRef(false);
+  // ── Race-condition guard: monotonic counter, incremented on every fetch ──
+  const latestRequestIdRef = useRef(0);
 
   // Set default cookie on client if requested by server (fallback scenario)
   useEffect(() => {
@@ -148,6 +151,12 @@ function HomePageInner({
 
   useEffect(() => {
     setSelectedCityState(urlCity);
+    if (urlCity && urlCity !== "All Cities") {
+      if (typeof document !== "undefined") {
+        document.cookie = `selected_city=${encodeURIComponent(urlCity)}; path=/; max-age=31536000; SameSite=Lax`;
+      }
+      setUserCity(urlCity).catch(() => {});
+    }
   }, [urlCity]);
 
   const selectedCity = selectedCityState;
@@ -221,10 +230,13 @@ function HomePageInner({
 
   // ── Fetch from Supabase (single dynamic query: filters + order + pagination) ──
   const fetchEvents = useCallback(async () => {
+    // ── Race-condition guard: stamp this request and bail if superseded ──
+    const requestId = ++latestRequestIdRef.current;
+
     setLoading(true);
     setFetchError(null);
     try {
-      const todayPKT = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
+      const todayPKT = getTodayPKT();
 
       // ONE single dynamic query with exact count
       let query = supabase
@@ -320,13 +332,21 @@ function HomePageInner({
       const { data, count, error } = await query;
       if (error) throw error;
 
+      // ── Discard stale responses: only apply if this is still the latest request ──
+      if (requestId !== latestRequestIdRef.current) return;
+
       setTotalCount(count ?? 0);
       setPageEvents((data || []).map(mapDbRow));
     } catch (err: unknown) {
+      // Only surface errors for the latest request
+      if (requestId !== latestRequestIdRef.current) return;
       const msg = err instanceof Error ? err.message : "Failed to load events.";
       setFetchError(msg);
     } finally {
-      setLoading(false);
+      // Only clear loading spinner for the latest request
+      if (requestId === latestRequestIdRef.current) {
+        setLoading(false);
+      }
     }
   }, [
     selectedCity,

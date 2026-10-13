@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CityCombobox from "@/components/CityCombobox";
 import { supabase } from "@/lib/supabaseClient";
+import { setUserCity } from "@/app/actions/city";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -47,10 +48,16 @@ export default function OnboardingPage() {
         return;
       }
 
+      // 3-way sync: Cookie + profiles + URL param
+      if (typeof document !== "undefined") {
+        document.cookie = `selected_city=${encodeURIComponent(selectedCity)}; path=/; max-age=31536000; SameSite=Lax`;
+      }
+      await setUserCity(selectedCity);
+
       if (typeof window !== "undefined") {
         sessionStorage.setItem("onboarding_prompted", "true");
       }
-      router.push("/");
+      router.push(`/?city=${encodeURIComponent(selectedCity)}`);
     } catch {
       setErrorMessage("An unexpected error occurred. Please try again.");
       setIsLoading(false);
@@ -72,13 +79,19 @@ export default function OnboardingPage() {
           .update({ primary_city: "Karachi" })
           .eq("id", user.id);
       }
+
+      // 3-way sync: Cookie + profiles + URL param
+      if (typeof document !== "undefined") {
+        document.cookie = "selected_city=Karachi; path=/; max-age=31536000; SameSite=Lax";
+      }
+      await setUserCity("Karachi");
     } catch (err) {
       console.error("Error setting default city on skip:", err);
     } finally {
       if (typeof window !== "undefined") {
         sessionStorage.setItem("onboarding_prompted", "true");
       }
-      router.push("/");
+      router.push("/?city=Karachi");
     }
   };
 

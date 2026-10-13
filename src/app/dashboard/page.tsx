@@ -14,6 +14,9 @@ import { supabase } from "@/lib/supabaseClient";
 import type { Database } from "@/lib/supabaseClient";
 import type { User } from "@supabase/supabase-js";
 import type { Event, EventCategory, EventStatus } from "@/lib/mockData";
+import { formatDatePKT } from "@/lib/dateUtils";
+import { setUserCity } from "@/app/actions/city";
+
 
 const DEFAULT_AVATARS = [
   "avatar-1",
@@ -327,9 +330,15 @@ function DashboardContent() {
     }
   };
 
-  // Handle City Change
+  // Handle City Change (3-Way Sync: State + Cookie + Profiles)
   const handleCityChange = async (newCity: string) => {
     setPrimaryCity(newCity);
+    if (typeof document !== "undefined") {
+      document.cookie = `selected_city=${encodeURIComponent(newCity)}; path=/; max-age=31536000; SameSite=Lax`;
+    }
+    setUserCity(newCity).catch((err) => {
+      console.error("Failed to update primary city on server:", err);
+    });
     if (!user) return;
     try {
       await supabase
@@ -460,16 +469,9 @@ function DashboardContent() {
     }
   };
 
-  // Format date like "Oct 5"
+  // Format date like "Oct 5" strictly in PKT
   const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "TBD";
-    try {
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return dateStr;
-      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    } catch {
-      return dateStr;
-    }
+    return formatDatePKT(dateStr);
   };
 
   const initial = (fullName || email || "U").trim().charAt(0).toUpperCase();

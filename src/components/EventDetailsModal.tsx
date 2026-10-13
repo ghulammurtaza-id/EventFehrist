@@ -14,11 +14,12 @@ interface EventDetailsModalProps {
   onClose: () => void;
 }
 
+import { formatDatePKTLong, formatDatePKT } from "@/lib/dateUtils";
+
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 function formatDateLong(dateStr: string): string {
-  const d = new Date(`${dateStr}T00:00:00`);
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + " (PKT)";
+  return formatDatePKTLong(dateStr);
 }
 
 // Strips seconds from "HH:MM:SS" → "HH:MM"
@@ -55,10 +56,10 @@ function deriveExtras(event: Event) {
   const prizes = event.prizes || (event.event_type === "Hackathon" || event.event_type === "Competition" ? "Rs. 500,000 total prize pool" : "—");
   const hasCert = event.certificate ?? (event.event_type !== "Meetup");
 
-  const regDeadline = event.reg_deadline || (() => {
+  const regDeadline = event.reg_deadline ? formatDatePKT(event.reg_deadline) : (() => {
     const d = new Date(`${event.event_date}T00:00:00`);
     d.setDate(d.getDate() - 2);
-    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    return formatDatePKT(d.toISOString().split("T")[0]);
   })();
 
   return { fee, isFree, tags, eligibility, teamSize, prizes, hasCert, regDeadline };

@@ -5,6 +5,7 @@ import HomePageClient from "./HomePageClient";
 import { mapDbRow } from "@/lib/mappers";
 import type { Event } from "@/lib/mockData";
 import type { Announcement } from "@/app/actions/announcements";
+import { getTodayPKT } from "@/lib/dateUtils";
 
 export default async function HomePage(props: {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -70,9 +71,7 @@ export default async function HomePage(props: {
   const initialCity = urlCityParam ?? resolvedCity;
 
   // Server-side initial query using the resolved city variable to prevent the "Karachi flash"
-  const todayPKT = new Date().toLocaleDateString("en-CA", {
-    timeZone: "Asia/Karachi",
-  });
+  const todayPKT = getTodayPKT();
 
   let query = supabase
     .from("events")

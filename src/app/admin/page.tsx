@@ -33,6 +33,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { approveEvent, requestRevision, rejectEvent } from "@/app/actions/admin";
 import { toggleUserBan, resolveReport } from "@/app/actions/reports";
 import { PAKISTAN_CITIES_BY_POPULATION } from "@/lib/constants";
+import { formatDatePKT } from "@/lib/dateUtils";
 
 export interface UserProfile {
   id: string;
@@ -979,7 +980,7 @@ export default function AdminPage() {
 
                                         {/* Date & City */}
                                         <td className="py-3.5 px-4 text-xs text-slate-700 align-top whitespace-nowrap">
-                                          <div className="font-medium">{ev.event_date}</div>
+                                          <div className="font-medium">{formatDatePKT(ev.event_date)}</div>
                                           <div className="text-slate-500 mt-0.5">{ev.city}</div>
                                         </td>
 
@@ -1411,11 +1412,7 @@ export default function AdminPage() {
                                           )}
                                         </td>
                                         <td className="py-3 px-4 text-slate-500 whitespace-nowrap">
-                                          {new Date(rep.created_at).toLocaleDateString("en-US", {
-                                            month: "short",
-                                            day: "numeric",
-                                            year: "numeric",
-                                          })}
+                                          {formatDatePKT(rep.created_at, { year: "numeric" })}
                                         </td>
                                         {/* Actions */}
                                         <td className="py-3 px-4 text-right whitespace-nowrap">

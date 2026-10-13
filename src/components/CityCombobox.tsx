@@ -164,7 +164,7 @@ export default function CityCombobox({
   selectedCity,
   onCityChange,
   className,
-  syncUserCity = false,
+  syncUserCity = true,
 }: CityComboboxProps) {
   const initialCity = propsValue ?? selectedCity ?? "";
   const [internalValue, setInternalValue] = useState(initialCity);

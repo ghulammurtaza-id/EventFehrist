@@ -7,6 +7,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabaseClient";
 import CityCombobox from "@/components/CityCombobox";
+import LoginModal from "@/components/LoginModal";
+import { submitEventAction } from "@/app/actions/events";
 
 const CATEGORIES = [
   "Technology",
@@ -134,6 +136,7 @@ function SubmitEventForm() {
   const [isUnauthorized, setIsUnauthorized] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const isDescTooLong = form.description.length > 1500;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -145,6 +148,36 @@ function SubmitEventForm() {
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [form.description]);
+
+  // Save form draft on change to prevent data loss on session timeout or refresh
+  useEffect(() => {
+    if (!isEditMode && typeof window !== "undefined") {
+      try {
+        sessionStorage.setItem(
+          "fehrist_submit_event_draft",
+          JSON.stringify({ form, audience, level, highlights })
+        );
+      } catch {}
+    }
+  }, [form, audience, level, highlights, isEditMode]);
+
+  // Restore draft on mount if present and form title is currently empty
+  useEffect(() => {
+    if (!isEditMode && typeof window !== "undefined") {
+      try {
+        const savedDraft = sessionStorage.getItem("fehrist_submit_event_draft");
+        if (savedDraft) {
+          const parsed = JSON.parse(savedDraft);
+          if (parsed.form && !form.title) {
+            setForm(parsed.form);
+            if (parsed.audience) setAudience(parsed.audience);
+            if (parsed.level) setLevel(parsed.level);
+            if (parsed.highlights) setHighlights(parsed.highlights);
+          }
+        }
+      } catch {}
+    }
+  }, [isEditMode]);
 
   // If in edit mode, fetch existing event data from Supabase and prefill form
   useEffect(() => {
@@ -269,12 +302,17 @@ function SubmitEventForm() {
     }
 
     try {
+      // 1. Session check to prevent silent failures on long forms
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
 
-      if (!user) {
-        setErrorMessage("You must be logged in to submit or update an event. Please sign in and try again.");
+      if (sessionError || !session?.user) {
+        setErrorMessage(
+          "Your session has timed out. Please sign in below — your form data has been safely preserved!"
+        );
+        setShowLoginModal(true);
         setIsLoading(false);
         return;
       }
@@ -286,81 +324,49 @@ function SubmitEventForm() {
         return;
       }
 
-      const audienceArray = audience.length > 0 ? audience : ["Open to All"];
-      const levelArray = level.length > 0 ? level : ["All Levels"];
-      const highlightsArray = highlights;
+      // 2. Execute Server Action with strict server-side validation (Zero Ghost Records)
+      const res = await submitEventAction({
+        id: eventId || undefined,
+        isEdit: isEditMode,
+        title: form.title,
+        organizer_name: form.organizer_name,
+        category: form.category,
+        event_type: form.event_type,
+        event_date: form.event_date,
+        start_time: form.start_time,
+        end_time: form.end_time,
+        reg_opens: form.reg_opens,
+        reg_deadline: form.reg_deadline,
+        city: form.city,
+        location_details: form.location_details,
+        description: form.description,
+        registration_url: form.registration_url,
+        website: form.website,
+        fee: form.fee,
+        audience,
+        level,
+        highlights,
+      });
 
-      if (isEditMode && eventId) {
-        // Mode === 'edit': UPDATE query with organizer_id security check
-        const { error } = await supabase
-          .from("events")
-          .update({
-            event_name: form.title,
-            organizer_name: form.organizer_name,
-            category: form.category,
-            event_type: form.event_type,
-            event_date: form.event_date,
-            start_time: form.start_time || null,
-            end_time: form.end_time || null,
-            registration_opens: form.reg_opens || null,
-            registration_deadline: form.reg_deadline || null,
-            city: form.city,
-            venue_location: form.location_details || form.city || "Venue TBD",
-            description: form.description,
-            registration_url: form.registration_url || null,
-            website_social: form.website || null,
-            fee: form.fee || "Free",
-            status: "Pending", // Resubmit for review
-            review_notes: null, // Clear old reviewer feedback on resubmission
-            audience: audienceArray,
-            level: levelArray,
-            highlights: highlightsArray.length > 0 ? highlightsArray : [],
-          })
-          .eq("id", eventId)
-          .eq("organizer_id", user.id); // Security check
-
-        if (error) {
-          setErrorMessage(error.message || "Failed to update event.");
-          setIsLoading(false);
-          return;
+      if (!res.success) {
+        if (res.sessionExpired) {
+          setErrorMessage(
+            "Your session has expired. Please sign in below — your form data has been preserved!"
+          );
+          setShowLoginModal(true);
+        } else {
+          setErrorMessage(res.error || "Failed to submit event.");
         }
-
-        setIsSubmitted(true);
-      } else {
-        // Mode !== 'edit': INSERT query
-        const { error } = await supabase.from("events").insert([
-          {
-            organizer_id: user.id,
-            event_name: form.title,
-            organizer_name: form.organizer_name,
-            category: form.category,
-            event_type: form.event_type,
-            event_date: form.event_date,
-            start_time: form.start_time || null,
-            end_time: form.end_time || null,
-            registration_opens: form.reg_opens || null,
-            registration_deadline: form.reg_deadline || null,
-            city: form.city,
-            venue_location: form.location_details || form.city || "Venue TBD",
-            description: form.description,
-            registration_url: form.registration_url || null,
-            website_social: form.website || null,
-            fee: form.fee || "Free",
-            status: "Pending",
-            audience: audienceArray,
-            level: levelArray,
-            highlights: highlightsArray.length > 0 ? highlightsArray : [],
-          },
-        ]);
-
-        if (error) {
-          setErrorMessage(error.message || "Failed to submit event.");
-          setIsLoading(false);
-          return;
-        }
-
-        setIsSubmitted(true);
+        setIsLoading(false);
+        return;
       }
+
+      // 3. Clear draft upon successful submission
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("fehrist_submit_event_draft");
+      }
+
+      setIsSubmitted(true);
     } catch {
       setErrorMessage("An unexpected error occurred while saving the event.");
     } finally {
@@ -815,6 +821,17 @@ function SubmitEventForm() {
           </form>
         )}
       </main>
+
+      {showLoginModal && (
+        <LoginModal
+          isOpen={true}
+          onClose={() => setShowLoginModal(false)}
+          onSuccess={() => {
+            setShowLoginModal(false);
+            setErrorMessage("Logged in successfully! Your form data is saved and ready to submit.");
+          }}
+        />
+      )}
 
       <Footer />
     </div>

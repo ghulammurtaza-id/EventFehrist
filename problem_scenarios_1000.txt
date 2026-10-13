@@ -1,0 +1,1000 @@
+0001. User attempts login with an empty email field and no password.
+0002. User enters an invalid email format that passes front-end validation but fails Supabase auth.
+0003. User has a deleted account but still has a valid session cookie.
+0004. Banned user tries to sign in and gets redirected unexpectedly.
+0005. User signs in with valid credentials while the profiles table is temporarily unavailable.
+0006. User logs in with a correct password but session is not persisted across a hard refresh.
+0007. User is redirected to /login while already authenticated because middleware sees no session.
+0008. User hits /submit without a session and loops between /login and /submit.
+0009. User is authenticated but profile role is missing, causing admin-only routes to deny access.
+0010. User clears cookies and is still treated as authenticated because stale local session data remains.
+0011. Session expires during a long form submission and the action silently fails after the user has already filled data.
+0012. User submits a signup with an email already registered in Supabase.
+0013. User requests password reset for an unconfirmed or disabled account.
+0014. User receives a password reset email but the callback route fails to exchange the code.
+0015. OAuth callback returns without a session due to a missing redirect URL.
+0016. User changes password but old session continues to exist and causes stale auth states.
+0017. User logs out while another tab is still using the page and the UI still shows editable admin tools.
+0018. User accesses /admin with a non-admin profile role but the page still renders admin data.
+0019. User with role admin is blocked because the role in profiles is uppercase or mixed case.
+0020. User triggers a server action without a valid cookie store in a server context.
+0021. User has a profile row with null is_banned and the app treats it as false while a hidden ban policy expects true.
+0022. User toggles ban state on a profile that does not exist, and the action reports success incorrectly.
+0023. User attempts login with an empty email field and no password.
+0024. User enters an invalid email format that passes front-end validation but fails Supabase auth.
+0025. User has a deleted account but still has a valid session cookie.
+0026. Banned user tries to sign in and gets redirected unexpectedly.
+0027. User signs in with valid credentials while the profiles table is temporarily unavailable.
+0028. User logs in with a correct password but session is not persisted across a hard refresh.
+0029. User is redirected to /login while already authenticated because middleware sees no session.
+0030. User hits /submit without a session and loops between /login and /submit.
+0031. User on /submit triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0032. User on /onboarding triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0033. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0034. User opens a page in a timezone different from PKT; event dates near midnight are shifted, causing past or future events to be displayed incorrectly.
+0035. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0036. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0037. User on /signup triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0038. User on /dashboard triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0039. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0040. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0041. User on /onboarding triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0042. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0043. User on /my-submissions triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0044. User with role admin accesses /submit-event; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0045. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0046. User on /signup triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0047. User on /dashboard triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0048. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0049. Admin resolves report with dismiss for a reason of Expired listing, but the event remains visible or the report remains pending because the update path is incomplete.
+0050. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0051. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0052. User submits an event with a missing or invalid date; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0053. User on /submit-event triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0054. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0055. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0056. Admin resolves report with hide_event for a reason of Spam, but the event remains visible or the report remains pending because the update path is incomplete.
+0057. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0058. User on /submit triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0059. User on /onboarding triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0060. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0061. User on /my-submissions triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0062. User on /submit-event triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0063. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0064. User on /signup triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0065. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0066. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0067. User on /submit triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0068. User opens a page in a timezone different from PKT; event dates near midnight are shifted, causing past or future events to be displayed incorrectly.
+0069. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0070. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0071. User on /submit-event triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0072. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0073. User on /signup triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0074. User on /dashboard triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0075. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0076. User on /submit triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0077. Admin resolves report with dismiss for a reason of Duplicate, but the event remains visible or the report remains pending because the update path is incomplete.
+0078. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0079. User on /my-submissions triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0080. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0081. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0082. User on /signup triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0083. User on /dashboard triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0084. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0085. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0086. User on /onboarding triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0087. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0088. User with role admin accesses /my-submissions; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0089. User on /submit-event triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0090. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0091. Admin resolves report with dismiss for a reason of Inappropriate content, but the event remains visible or the report remains pending because the update path is incomplete.
+0092. User on /dashboard triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0093. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0094. User on /submit triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0095. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0096. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0097. User on /my-submissions triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0098. Admin resolves report with hide_event for a reason of Scam, but the event remains visible or the report remains pending because the update path is incomplete.
+0099. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0100. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0101. User on /dashboard triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0102. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0103. User on /submit triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0104. User submits an event with a missing or invalid website; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0105. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0106. User on /my-submissions triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0107. User on /submit-event triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0108. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0109. User on /signup triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0110. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0111. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0112. Admin resolves report with hide_event for a reason of Spam, but the event remains visible or the report remains pending because the update path is incomplete.
+0113. User on /onboarding triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0114. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0115. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0116. User on /submit-event triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0117. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0118. User on /signup triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0119. Admin resolves report with dismiss for a reason of Fake event, but the event remains visible or the report remains pending because the update path is incomplete.
+0120. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0121. User with role admin accesses /submit; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0122. User on /onboarding triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0123. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0124. User on /my-submissions triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0125. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0126. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0127. User on /signup triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0128. User on /dashboard triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0129. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0130. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0131. User on /onboarding triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0132. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0133. Admin resolves report with dismiss for a reason of Duplicate, but the event remains visible or the report remains pending because the update path is incomplete.
+0134. User on /submit-event triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0135. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0136. User opens a page in a timezone different from PKT; event dates near midnight are shifted, causing past or future events to be displayed incorrectly.
+0137. User on /dashboard triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0138. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0139. User on /submit triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0140. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0141. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0142. User on /my-submissions triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0143. User with role admin accesses /submit-event; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0144. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0145. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0146. User on /dashboard triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0147. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0148. User on /submit triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0149. User on /onboarding triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0150. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0151. User on /my-submissions triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0152. User on /submit-event triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0153. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0154. Admin resolves report with hide_event for a reason of Scam, but the event remains visible or the report remains pending because the update path is incomplete.
+0155. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0156. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0157. User on /submit triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0158. User on /onboarding triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0159. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0160. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0161. Admin resolves report with dismiss for a reason of Expired listing, but the event remains visible or the report remains pending because the update path is incomplete.
+0162. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0163. User on /signup triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0164. User on /dashboard triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0165. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0166. User on /submit triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0167. User on /onboarding triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0168. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0169. User submits an event with a missing or invalid password; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0170. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0171. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0172. User on /signup triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0173. User on /dashboard triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0174. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0175. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0176. User with role admin accesses /onboarding; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0177. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0178. User on /my-submissions triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0179. User on /submit-event triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0180. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0181. User on /signup triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0182. Admin resolves report with hide_event for a reason of Offensive, but the event remains visible or the report remains pending because the update path is incomplete.
+0183. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0184. User on /submit triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0185. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0186. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0187. User with role admin accesses /my-submissions; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0188. User on /submit-event triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0189. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0190. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0191. User on /dashboard triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0192. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0193. User on /submit triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0194. User on /onboarding triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0195. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0196. Admin resolves report with hide_event for a reason of Wrong location, but the event remains visible or the report remains pending because the update path is incomplete.
+0197. User on /submit-event triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0198. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0199. User on /signup triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0200. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0201. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0202. User on /submit triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0203. Admin resolves report with dismiss for a reason of Inappropriate content, but the event remains visible or the report remains pending because the update path is incomplete.
+0204. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0205. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0206. User on /submit-event triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0207. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0208. User submits an event with a missing or invalid event name; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0209. User with role admin accesses /dashboard; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0210. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0211. User on /submit triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0212. User on /onboarding triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0213. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0214. User on /my-submissions triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0215. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0216. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0217. Admin resolves report with dismiss for a reason of Expired listing, but the event remains visible or the report remains pending because the update path is incomplete.
+0218. User on /dashboard triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0219. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0220. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0221. User submits an event with a missing or invalid time; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0222. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0223. User on /my-submissions triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0224. Admin resolves report with hide_event for a reason of Spam, but the event remains visible or the report remains pending because the update path is incomplete.
+0225. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0226. User on /signup triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0227. User on /dashboard triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0228. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0229. User on /submit triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0230. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0231. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0232. User on /my-submissions triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0233. User on /submit-event triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0234. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0235. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0236. User on /dashboard triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0237. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0238. Admin resolves report with hide_event for a reason of Offensive, but the event remains visible or the report remains pending because the update path is incomplete.
+0239. User on /onboarding triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0240. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0241. User on /my-submissions triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0242. User with role admin accesses /submit-event; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0243. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0244. User on /signup triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0245. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0246. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0247. User submits an event with a missing or invalid organizer name; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0248. User on /onboarding triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0249. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0250. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0251. User on /submit-event triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0252. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0253. User with role admin accesses /signup; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0254. User on /dashboard triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0255. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0256. User on /submit triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0257. User on /onboarding triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0258. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0259. Admin resolves report with dismiss for a reason of Inappropriate content, but the event remains visible or the report remains pending because the update path is incomplete.
+0260. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0261. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0262. User on /signup triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0263. User on /dashboard triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0264. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0265. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0266. Admin resolves report with hide_event for a reason of Scam, but the event remains visible or the report remains pending because the update path is incomplete.
+0267. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0268. User on /my-submissions triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0269. User on /submit-event triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0270. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0271. User on /signup triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0272. User opens a page in a timezone different from PKT; event dates near midnight are shifted, causing past or future events to be displayed incorrectly.
+0273. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0274. User on /submit triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0275. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0276. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0277. User on /my-submissions triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0278. User on /submit-event triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0279. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0280. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0281. User on /dashboard triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0282. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0283. User on /submit triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0284. User on /onboarding triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0285. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0286. User with role admin accesses /my-submissions; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0287. Admin resolves report with dismiss for a reason of Fake event, but the event remains visible or the report remains pending because the update path is incomplete.
+0288. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0289. User opens a page in a timezone different from PKT; event dates near midnight are shifted, causing past or future events to be displayed incorrectly.
+0290. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0291. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0292. User on /submit triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0293. User on /onboarding triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0294. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0295. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0296. User on /submit-event triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0297. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0298. User on /signup triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0299. User submits an event with a missing or invalid password; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0300. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0301. Admin resolves report with dismiss for a reason of Duplicate, but the event remains visible or the report remains pending because the update path is incomplete.
+0302. User on /onboarding triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0303. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0304. User on /my-submissions triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0305. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0306. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0307. User on /signup triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0308. Admin resolves report with hide_event for a reason of Wrong location, but the event remains visible or the report remains pending because the update path is incomplete.
+0309. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0310. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0311. User on /onboarding triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0312. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0313. User on /my-submissions triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0314. User on /submit-event triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0315. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0316. User on /signup triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0317. User on /dashboard triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0318. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0319. User with role admin accesses /submit; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0320. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0321. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0322. Admin resolves report with hide_event for a reason of Scam, but the event remains visible or the report remains pending because the update path is incomplete.
+0323. User opens a page in a timezone different from PKT; event dates near midnight are shifted, causing past or future events to be displayed incorrectly.
+0324. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0325. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0326. User on /dashboard triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0327. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0328. User on /submit triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0329. Admin resolves report with dismiss for a reason of Expired listing, but the event remains visible or the report remains pending because the update path is incomplete.
+0330. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0331. User on /my-submissions triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0332. User on /submit-event triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0333. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0334. User on /signup triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0335. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0336. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0337. User on /submit triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0338. User submits an event with a missing or invalid event name; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0339. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0340. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0341. User with role admin accesses /submit-event; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0342. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0343. Admin resolves report with dismiss for a reason of Fake event, but the event remains visible or the report remains pending because the update path is incomplete.
+0344. User on /dashboard triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0345. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0346. User on /submit triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0347. User on /onboarding triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0348. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0349. User on /my-submissions triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0350. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0351. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0352. User with role admin accesses /signup; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0353. User on /dashboard triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0354. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0355. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0356. User on /onboarding triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0357. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0358. User on /my-submissions triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0359. User on /submit-event triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0360. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0361. User on /signup triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0362. User on /dashboard triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0363. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0364. Admin resolves report with hide_event for a reason of Wrong location, but the event remains visible or the report remains pending because the update path is incomplete.
+0365. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0366. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0367. User on /my-submissions triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0368. User on /submit-event triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0369. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0370. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0371. Admin resolves report with dismiss for a reason of Inappropriate content, but the event remains visible or the report remains pending because the update path is incomplete.
+0372. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0373. User on /submit triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0374. User with role admin accesses /onboarding; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0375. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0376. User on /my-submissions triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0377. User submits an event with a missing or invalid organizer name; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0378. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0379. User on /signup triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0380. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0381. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0382. User on /submit triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0383. User on /onboarding triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0384. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0385. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0386. User on /submit-event triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0387. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0388. User on /signup triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0389. User on /dashboard triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0390. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0391. User opens a page in a timezone different from PKT; event dates near midnight are shifted, causing past or future events to be displayed incorrectly.
+0392. Admin resolves report with hide_event for a reason of Spam, but the event remains visible or the report remains pending because the update path is incomplete.
+0393. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0394. User on /my-submissions triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0395. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0396. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0397. User on /signup triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0398. User on /dashboard triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0399. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0400. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0401. User on /onboarding triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0402. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0403. User submits an event with a missing or invalid fee; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0404. User on /submit-event triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0405. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0406. Admin resolves report with hide_event for a reason of Offensive, but the event remains visible or the report remains pending because the update path is incomplete.
+0407. User with role admin accesses /dashboard; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0408. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0409. User on /submit triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0410. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0411. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0412. User on /my-submissions triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0413. Admin resolves report with dismiss for a reason of Duplicate, but the event remains visible or the report remains pending because the update path is incomplete.
+0414. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0415. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0416. User submits an event with a missing or invalid venue location; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0417. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0418. User with role admin accesses /submit; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0419. User on /onboarding triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0420. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0421. User on /my-submissions triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0422. User on /submit-event triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0423. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0424. User on /signup triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0425. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0426. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0427. Admin resolves report with dismiss for a reason of Inappropriate content, but the event remains visible or the report remains pending because the update path is incomplete.
+0428. User on /onboarding triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0429. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0430. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0431. User on /submit-event triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0432. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0433. User on /signup triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0434. Admin resolves report with hide_event for a reason of Scam, but the event remains visible or the report remains pending because the update path is incomplete.
+0435. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0436. User on /submit triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0437. User on /onboarding triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0438. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0439. User on /my-submissions triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0440. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0441. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0442. User submits an event with a missing or invalid date; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0443. User on /dashboard triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0444. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0445. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0446. User on /onboarding triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0447. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0448. Admin resolves report with hide_event for a reason of Spam, but the event remains visible or the report remains pending because the update path is incomplete.
+0449. User on /submit-event triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0450. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0451. User with role admin accesses /signup; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0452. User on /dashboard triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0453. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0454. User on /submit triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0455. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0456. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0457. User on /my-submissions triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0458. User on /submit-event triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0459. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0460. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0461. User on /dashboard triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0462. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0463. User on /submit triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0464. User on /onboarding triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0465. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0466. User on /my-submissions triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0467. User on /submit-event triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0468. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0469. Admin resolves report with dismiss for a reason of Duplicate, but the event remains visible or the report remains pending because the update path is incomplete.
+0470. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0471. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0472. User on /submit triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0473. User with role admin accesses /onboarding; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0474. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0475. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0476. Admin resolves report with hide_event for a reason of Wrong location, but the event remains visible or the report remains pending because the update path is incomplete.
+0477. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0478. User on /signup triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0479. User on /dashboard triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0480. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0481. User submits an event with a missing or invalid time; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0482. User on /onboarding triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0483. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0484. User with role admin accesses /my-submissions; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0485. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0486. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0487. User on /signup triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0488. User on /dashboard triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0489. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0490. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0491. User on /onboarding triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0492. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0493. User opens a page in a timezone different from PKT; event dates near midnight are shifted, causing past or future events to be displayed incorrectly.
+0494. User submits an event with a missing or invalid website; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0495. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0496. User on /signup triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0497. Admin resolves report with dismiss for a reason of Expired listing, but the event remains visible or the report remains pending because the update path is incomplete.
+0498. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0499. User on /submit triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0500. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0501. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0502. User on /my-submissions triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0503. User on /submit-event triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0504. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0505. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0506. User with role admin accesses /dashboard; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0507. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0508. User on /submit triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0509. User on /onboarding triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0510. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0511. Admin resolves report with dismiss for a reason of Fake event, but the event remains visible or the report remains pending because the update path is incomplete.
+0512. User on /submit-event triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0513. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0514. User on /signup triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0515. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0516. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0517. User with role admin accesses /submit; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0518. Admin resolves report with hide_event for a reason of Offensive, but the event remains visible or the report remains pending because the update path is incomplete.
+0519. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0520. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0521. User on /submit-event triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0522. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0523. User on /signup triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0524. User on /dashboard triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0525. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0526. User on /submit triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0527. User opens a page in a timezone different from PKT; event dates near midnight are shifted, causing past or future events to be displayed incorrectly.
+0528. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0529. User on /my-submissions triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0530. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0531. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0532. Admin resolves report with hide_event for a reason of Wrong location, but the event remains visible or the report remains pending because the update path is incomplete.
+0533. User submits an event with a missing or invalid fee; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0534. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0535. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0536. User on /onboarding triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0537. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0538. User on /my-submissions triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0539. Admin resolves report with dismiss for a reason of Inappropriate content, but the event remains visible or the report remains pending because the update path is incomplete.
+0540. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0541. User on /signup triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0542. User on /dashboard triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0543. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0544. User opens a page in a timezone different from PKT; event dates near midnight are shifted, causing past or future events to be displayed incorrectly.
+0545. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0546. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0547. User on /my-submissions triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0548. User on /submit-event triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0549. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0550. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0551. User on /dashboard triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0552. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0553. Admin resolves report with dismiss for a reason of Expired listing, but the event remains visible or the report remains pending because the update path is incomplete.
+0554. User on /onboarding triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0555. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0556. User on /my-submissions triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0557. User on /submit-event triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0558. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0559. User submits an event with a missing or invalid password; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0560. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0561. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0562. User on /submit triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0563. User on /onboarding triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0564. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0565. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0566. User on /submit-event triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0567. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0568. User on /signup triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0569. User on /dashboard triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0570. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0571. User on /submit triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0572. User with role admin accesses /onboarding; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0573. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0574. Admin resolves report with hide_event for a reason of Offensive, but the event remains visible or the report remains pending because the update path is incomplete.
+0575. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0576. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0577. User on /signup triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0578. User opens a page in a timezone different from PKT; event dates near midnight are shifted, causing past or future events to be displayed incorrectly.
+0579. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0580. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0581. Admin resolves report with dismiss for a reason of Duplicate, but the event remains visible or the report remains pending because the update path is incomplete.
+0582. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0583. User with role admin accesses /my-submissions; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0584. User on /submit-event triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0585. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0586. User on /signup triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0587. User on /dashboard triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0588. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0589. User on /submit triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0590. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0591. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0592. User on /my-submissions triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0593. User on /submit-event triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0594. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0595. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0596. User on /dashboard triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0597. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0598. User submits an event with a missing or invalid event name; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0599. User on /onboarding triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0600. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0601. User on /my-submissions triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0602. Admin resolves report with hide_event for a reason of Scam, but the event remains visible or the report remains pending because the update path is incomplete.
+0603. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0604. User on /signup triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0605. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0606. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0607. User on /submit triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0608. User on /onboarding triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0609. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0610. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0611. User submits an event with a missing or invalid time; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0612. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0613. User on /signup triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0614. User on /dashboard triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0615. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0616. Admin resolves report with hide_event for a reason of Spam, but the event remains visible or the report remains pending because the update path is incomplete.
+0617. User on /onboarding triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0618. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0619. User on /my-submissions triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0620. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0621. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0622. User on /signup triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0623. Admin resolves report with dismiss for a reason of Fake event, but the event remains visible or the report remains pending because the update path is incomplete.
+0624. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0625. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0626. User on /onboarding triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0627. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0628. User on /my-submissions triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0629. User opens a page in a timezone different from PKT; event dates near midnight are shifted, causing past or future events to be displayed incorrectly.
+0630. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0631. User on /signup triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0632. User on /dashboard triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0633. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0634. User on /submit triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0635. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0636. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0637. Admin resolves report with dismiss for a reason of Duplicate, but the event remains visible or the report remains pending because the update path is incomplete.
+0638. User with role admin accesses /submit-event; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0639. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0640. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0641. User on /dashboard triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0642. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0643. User on /submit triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0644. Admin resolves report with hide_event for a reason of Wrong location, but the event remains visible or the report remains pending because the update path is incomplete.
+0645. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0646. User opens a page in a timezone different from PKT; event dates near midnight are shifted, causing past or future events to be displayed incorrectly.
+0647. User on /submit-event triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0648. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0649. User with role admin accesses /signup; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0650. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0651. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0652. User on /submit triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0653. User on /onboarding triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0654. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0655. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0656. User on /submit-event triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0657. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0658. Admin resolves report with hide_event for a reason of Scam, but the event remains visible or the report remains pending because the update path is incomplete.
+0659. User on /dashboard triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0660. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0661. User on /submit triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0662. User on /onboarding triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0663. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0664. User on /my-submissions triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0665. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0666. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0667. User on /signup triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0668. User on /dashboard triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0669. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0670. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0671. User with role admin accesses /onboarding; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0672. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0673. User on /my-submissions triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0674. User on /submit-event triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0675. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0676. User submits an event with a missing or invalid venue location; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0677. User on /dashboard triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0678. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0679. Admin resolves report with dismiss for a reason of Fake event, but the event remains visible or the report remains pending because the update path is incomplete.
+0680. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0681. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0682. User with role admin accesses /my-submissions; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0683. User on /submit-event triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0684. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0685. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0686. Admin resolves report with hide_event for a reason of Offensive, but the event remains visible or the report remains pending because the update path is incomplete.
+0687. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0688. User on /submit triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0689. User submits an event with a missing or invalid password; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0690. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0691. User on /my-submissions triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0692. User on /submit-event triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0693. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0694. User on /signup triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0695. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0696. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0697. User opens a page in a timezone different from PKT; event dates near midnight are shifted, causing past or future events to be displayed incorrectly.
+0698. User on /onboarding triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0699. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0700. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0701. User on /submit-event triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0702. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0703. User on /signup triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0704. User with role admin accesses /dashboard; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0705. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0706. User on /submit triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0707. Admin resolves report with dismiss for a reason of Inappropriate content, but the event remains visible or the report remains pending because the update path is incomplete.
+0708. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0709. User on /my-submissions triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0710. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0711. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0712. User on /signup triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0713. User on /dashboard triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0714. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0715. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0716. User on /onboarding triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0717. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0718. User on /my-submissions triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0719. User on /submit-event triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0720. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0721. Admin resolves report with dismiss for a reason of Expired listing, but the event remains visible or the report remains pending because the update path is incomplete.
+0722. User on /dashboard triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0723. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0724. User on /submit triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0725. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0726. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0727. User on /my-submissions triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0728. Admin resolves report with hide_event for a reason of Spam, but the event remains visible or the report remains pending because the update path is incomplete.
+0729. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0730. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0731. User opens a page in a timezone different from PKT; event dates near midnight are shifted, causing past or future events to be displayed incorrectly.
+0732. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0733. User on /submit triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0734. User on /onboarding triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0735. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0736. User on /my-submissions triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0737. User with role admin accesses /submit-event; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0738. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0739. User on /signup triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0740. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0741. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0742. Admin resolves report with hide_event for a reason of Offensive, but the event remains visible or the report remains pending because the update path is incomplete.
+0743. User on /onboarding triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0744. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0745. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0746. User on /submit-event triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0747. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0748. User with role admin accesses /signup; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0749. Admin resolves report with dismiss for a reason of Duplicate, but the event remains visible or the report remains pending because the update path is incomplete.
+0750. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0751. User on /submit triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0752. User on /onboarding triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0753. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0754. User submits an event with a missing or invalid website; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0755. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0756. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0757. User on /signup triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0758. User on /dashboard triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0759. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0760. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0761. User on /onboarding triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0762. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0763. Admin resolves report with dismiss for a reason of Inappropriate content, but the event remains visible or the report remains pending because the update path is incomplete.
+0764. User on /submit-event triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0765. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0766. User on /signup triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0767. User submits an event with a missing or invalid organizer name; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0768. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0769. User on /submit triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0770. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0771. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0772. User on /my-submissions triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0773. User on /submit-event triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0774. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0775. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0776. User on /dashboard triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0777. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0778. User on /submit triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0779. User on /onboarding triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0780. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0781. User with role admin accesses /my-submissions; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0782. User opens a page in a timezone different from PKT; event dates near midnight are shifted, causing past or future events to be displayed incorrectly.
+0783. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0784. Admin resolves report with hide_event for a reason of Spam, but the event remains visible or the report remains pending because the update path is incomplete.
+0785. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0786. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0787. User on /submit triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0788. User on /onboarding triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0789. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0790. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0791. Admin resolves report with dismiss for a reason of Fake event, but the event remains visible or the report remains pending because the update path is incomplete.
+0792. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0793. User submits an event with a missing or invalid fee; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0794. User on /dashboard triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0795. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0796. User on /submit triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0797. User on /onboarding triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0798. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0799. User opens a page in a timezone different from PKT; event dates near midnight are shifted, causing past or future events to be displayed incorrectly.
+0800. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0801. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0802. User on /signup triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0803. User with role admin accesses /dashboard; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0804. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0805. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0806. User submits an event with a missing or invalid venue location; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0807. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0808. User on /my-submissions triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0809. User on /submit-event triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0810. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0811. User on /signup triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0812. Admin resolves report with hide_event for a reason of Wrong location, but the event remains visible or the report remains pending because the update path is incomplete.
+0813. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0814. User with role admin accesses /submit; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0815. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0816. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0817. User on /my-submissions triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0818. User on /submit-event triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0819. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0820. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0821. User on /dashboard triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0822. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0823. User on /submit triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0824. User on /onboarding triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0825. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0826. Admin resolves report with hide_event for a reason of Scam, but the event remains visible or the report remains pending because the update path is incomplete.
+0827. User on /submit-event triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0828. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0829. User on /signup triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0830. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0831. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0832. User submits an event with a missing or invalid date; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0833. Admin resolves report with dismiss for a reason of Expired listing, but the event remains visible or the report remains pending because the update path is incomplete.
+0834. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0835. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0836. User with role admin accesses /submit-event; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0837. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0838. User on /signup triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0839. User on /dashboard triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0840. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0841. User on /submit triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0842. User on /onboarding triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0843. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0844. User on /my-submissions triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0845. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0846. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0847. Admin resolves report with dismiss for a reason of Fake event, but the event remains visible or the report remains pending because the update path is incomplete.
+0848. User on /dashboard triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0849. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0850. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0851. User on /onboarding triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0852. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0853. User on /my-submissions triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0854. Admin resolves report with hide_event for a reason of Offensive, but the event remains visible or the report remains pending because the update path is incomplete.
+0855. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0856. User on /signup triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0857. User on /dashboard triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0858. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0859. User on /submit triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0860. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0861. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0862. User on /my-submissions triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0863. User on /submit-event triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0864. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0865. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0866. User on /dashboard triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0867. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0868. Admin resolves report with hide_event for a reason of Wrong location, but the event remains visible or the report remains pending because the update path is incomplete.
+0869. User with role admin accesses /onboarding; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0870. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0871. User submits an event with a missing or invalid time; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0872. User on /submit-event triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0873. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0874. User on /signup triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0875. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0876. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0877. User on /submit triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0878. User on /onboarding triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0879. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0880. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0881. User on /submit-event triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0882. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0883. User on /signup triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0884. User submits an event with a missing or invalid website; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0885. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0886. User on /submit triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0887. User on /onboarding triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0888. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0889. Admin resolves report with dismiss for a reason of Expired listing, but the event remains visible or the report remains pending because the update path is incomplete.
+0890. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0891. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0892. User on /signup triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0893. User on /dashboard triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0894. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0895. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0896. Admin resolves report with hide_event for a reason of Spam, but the event remains visible or the report remains pending because the update path is incomplete.
+0897. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0898. User on /my-submissions triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0899. User on /submit-event triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0900. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0901. User opens a page in a timezone different from PKT; event dates near midnight are shifted, causing past or future events to be displayed incorrectly.
+0902. User with role admin accesses /dashboard; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0903. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0904. User on /submit triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0905. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0906. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0907. User on /my-submissions triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0908. User on /submit-event triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0909. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0910. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0911. User on /dashboard triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0912. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0913. User with role admin accesses /submit; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0914. User on /onboarding triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0915. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0916. User on /my-submissions triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0917. Admin resolves report with dismiss for a reason of Duplicate, but the event remains visible or the report remains pending because the update path is incomplete.
+0918. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0919. User on /signup triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0920. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0921. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0922. User on /submit triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0923. User submits an event with a missing or invalid fee; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0924. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0925. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0926. User on /submit-event triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0927. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0928. User on /signup triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0929. User on /dashboard triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0930. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0931. Admin resolves report with dismiss for a reason of Inappropriate content, but the event remains visible or the report remains pending because the update path is incomplete.
+0932. User on /onboarding triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0933. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0934. User on /my-submissions triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0935. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0936. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0937. User on /signup triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0938. Admin resolves report with hide_event for a reason of Scam, but the event remains visible or the report remains pending because the update path is incomplete.
+0939. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0940. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0941. User on /onboarding triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0942. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0943. User on /my-submissions triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0944. User on /submit-event triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0945. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0946. User with role admin accesses /signup; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0947. User on /dashboard triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0948. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0949. User submits an event with a missing or invalid password; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0950. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0951. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0952. Admin resolves report with hide_event for a reason of Spam, but the event remains visible or the report remains pending because the update path is incomplete.
+0953. User on /submit-event triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0954. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0955. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0956. User on /dashboard triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0957. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0958. User on /submit triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0959. Admin resolves report with dismiss for a reason of Fake event, but the event remains visible or the report remains pending because the update path is incomplete.
+0960. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0961. User on /my-submissions triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0962. User submits an event with a missing or invalid date; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0963. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0964. User on /signup triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0965. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0966. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0967. User on /submit triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0968. User with role admin accesses /onboarding; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0969. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0970. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0971. User on /submit-event triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0972. User in Multan changes selected city to Peshawar, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0973. Admin resolves report with dismiss for a reason of Duplicate, but the event remains visible or the report remains pending because the update path is incomplete.
+0974. User on /dashboard triggers a problem when announcement creation with website set to a value that breaks the app state or backend validation in Islamabad.
+0975. User in Quetta changes selected city to Faisalabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0976. User on /submit triggers a problem when password reset with venue location set to a value that breaks the app state or backend validation in Sialkot.
+0977. User on /onboarding triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0978. User in Peshawar changes selected city to Karachi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0979. User with role admin accesses /my-submissions; if role data is null or mismatched, the app may show unauthorized admin controls or block valid organizer actions.
+0980. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0981. User in Rawalpindi changes selected city to Rawalpindi, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0982. User on /signup triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0983. User on /dashboard triggers a problem when signup with fee set to a value that breaks the app state or backend validation in Hyderabad.
+0984. User in Islamabad changes selected city to Multan, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0985. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0986. User opens a page in a timezone different from PKT; event dates near midnight are shifted, causing past or future events to be displayed incorrectly.
+0987. User in Lahore changes selected city to Hyderabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0988. User submits an event with a missing or invalid event name; the form succeeds on client side, but server-side validation fails and leaves a broken record in the database.
+0989. User on /submit-event triggers a problem when event submission with password set to a value that breaks the app state or backend validation in Faisalabad.
+0990. User in Karachi changes selected city to Islamabad, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0991. User on /signup triggers a problem when report resolution with time set to a value that breaks the app state or backend validation in Rawalpindi.
+0992. User on /dashboard triggers a problem when event update with date set to a value that breaks the app state or backend validation in Multan.
+0993. User in Hyderabad changes selected city to Quetta, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0994. Admin resolves report with hide_event for a reason of Scam, but the event remains visible or the report remains pending because the update path is incomplete.
+0995. User filters date while searching for Music; the query uses a stale URL param and returns wrong data due to pagination or race conditions.
+0996. User in Sialkot changes selected city to Sialkot, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+0997. User on /my-submissions triggers a problem when announcement deactivation with organizer name set to a value that breaks the app state or backend validation in Lahore.
+0998. User on /submit-event triggers a problem when admin ban toggle with event name set to a value that breaks the app state or backend validation in Peshawar.
+0999. User in Faisalabad changes selected city to Lahore, but the cookie, URL params, and Supabase profile stay out of sync, leading to stale event results.
+1000. User filters city while searching for AI; the query uses a stale URL param and returns wrong data due to pagination or race conditions.

@@ -21,11 +21,11 @@ function getEventMode(event: Event): "Physical" | "Online" | "Hybrid" {
   return "Physical";
 }
 
-// Formats "2026-10-15" → "Oct 15"
+import { formatDatePKT } from "@/lib/dateUtils";
+
+// Formats "2026-10-15" → "Oct 15" strictly in PKT
 function formatDate(dateStr: string): string {
-  // Append T00:00:00 to avoid timezone off-by-one
-  const d = new Date(`${dateStr}T00:00:00`);
-  return d.toLocaleDateString("en-PK", { month: "short", day: "numeric" });
+  return formatDatePKT(dateStr);
 }
 
 // Strips seconds from "HH:MM:SS" → "HH:MM"

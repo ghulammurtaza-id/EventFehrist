@@ -8,14 +8,15 @@ import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabaseClient";
 import type { Database } from "@/lib/supabaseClient";
 import type { User } from "@supabase/supabase-js";
-import type { Event, EventCategory, EventStatus } from "@/lib/mockData";
+import type { Event as AppEvent, EventCategory, EventStatus } from "@/lib/mockData";
 import EventDetailsModal from "@/components/EventDetailsModal";
+import { formatDatePKT } from "@/lib/dateUtils";
 
 const TODAY_ISO = new Date().toISOString().split("T")[0];
 
 type DbEvent = Database["public"]["Tables"]["events"]["Row"];
 
-function mapDbRow(row: Partial<DbEvent> & { id: string; event_name: string }): Event {
+function mapDbRow(row: Partial<DbEvent> & { id: string; event_name: string }): AppEvent {
   let mode: "Physical" | "Online" | "Hybrid" = "Physical";
   const venue = (row.venue_location || "").toLowerCase();
   const highlights = row.highlights || [];
@@ -42,7 +43,7 @@ function mapDbRow(row: Partial<DbEvent> & { id: string; event_name: string }): E
     end_time: row.end_time || "",
     city: row.city || "Pakistan",
     category: (row.category as EventCategory) || "Technology",
-    event_type: (row.event_type as Event["event_type"]) || "Conference",
+    event_type: (row.event_type as AppEvent["event_type"]) || "Conference",
     location_details: row.venue_location || "",
     registration_url: row.registration_url || "",
     organizer_name: row.organizer_name || "Organizer",
@@ -149,20 +150,13 @@ export default function SavedEventsPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [isLoadingEvents, setIsLoadingEvents] = useState(false);
   const [unsavingId, setUnsavingId] = useState<string | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<AppEvent | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(totalCount / EVENTS_PER_PAGE));
 
   const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "TBD";
-    try {
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return dateStr;
-      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    } catch {
-      return dateStr;
-    }
+    return formatDatePKT(dateStr);
   };
 
   const fetchSavedEvents = useCallback(async (userId: string, page: number) => {
