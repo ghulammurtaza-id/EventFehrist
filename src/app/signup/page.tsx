@@ -6,6 +6,7 @@ import { Inter } from "next/font/google";
 import { Mail } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import GoogleButton from "@/components/GoogleButton";
 import { supabase } from "@/lib/supabaseClient";
 
 const inter = Inter({
@@ -151,7 +152,8 @@ export default function SignupPage() {
               </Link>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <>
+              <form onSubmit={handleSubmit} className="space-y-4">
               {/* Full Name */}
               <div>
                 <label
@@ -229,7 +231,20 @@ export default function SignupPage() {
                 </button>
               </div>
             </form>
-          )}
+
+            {/* Divider */}
+            <div className="flex items-center my-5">
+              <div className="flex-1 border-t border-slate-200" />
+              <span className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                OR
+              </span>
+              <div className="flex-1 border-t border-slate-200" />
+            </div>
+
+            {/* Google OAuth Button */}
+            <GoogleButton text="Continue with Google" />
+          </>
+        )}
 
           {/* Bottom link */}
           <div className="mt-5 text-xs text-slate-600">

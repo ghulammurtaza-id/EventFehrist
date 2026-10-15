@@ -6,10 +6,9 @@ import type { NextRequest } from "next/server";
 /**
  * GET /auth/callback
  *
- * Supabase redirects here after email verification with a one-time `code`
- * query parameter.  We exchange it for a session (which is written to the
- * user's cookies by the auth-helpers client) and then send them on to the
- * success page.
+ * Handles OAuth (e.g. Google) and auth callbacks from Supabase.
+ * Exchanges the `code` parameter for a session.
+ * Redirects to homepage ('/') if successful, or to '/login?error=auth_callback_failed' on failure.
  */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -17,18 +16,39 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     try {
-      const cookieStore = cookies();
-      const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
-      const { data } = await supabase.auth.exchangeCodeForSession(code);
-      if (data?.user) {
-        const { syncUserCityOnLogin } = await import("@/app/actions/city");
-        await syncUserCityOnLogin(data.user.id);
+      const cookieStore = await cookies();
+      const supabase = createRouteHandlerClient({
+        cookies: () => cookieStore as any,
+      });
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+      if (error) {
+        console.error("Auth callback error exchanging code for session:", error);
+        return NextResponse.redirect(
+          new URL("/login?error=auth_callback_failed", origin)
+        );
       }
+
+      if (data?.user) {
+        try {
+          const { syncUserCityOnLogin } = await import("@/app/actions/city");
+          await syncUserCityOnLogin(data.user.id);
+        } catch (cityErr) {
+          console.error("Error syncing city on login:", cityErr);
+        }
+      }
+
+      return NextResponse.redirect(new URL("/", origin));
     } catch (error) {
-      console.error("Auth callback error exchanging code for session:", error);
+      console.error("Auth callback exception:", error);
+      return NextResponse.redirect(
+        new URL("/login?error=auth_callback_failed", origin)
+      );
     }
   }
 
-  // Always redirect — even if code was missing or already used — so the user never gets stuck.
-  return NextResponse.redirect(new URL("/verify-success", origin));
+  // If code was missing, redirect to login with error
+  return NextResponse.redirect(
+    new URL("/login?error=auth_callback_failed", origin)
+  );
 }

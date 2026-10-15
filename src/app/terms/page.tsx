@@ -10,7 +10,7 @@ const openSans = Open_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Terms of Service — Fehrist",
+  title: "Terms of Service - Fehrist",
   description:
     "These terms outline the simple rules for using our platform. By browsing or submitting events, you agree to help us keep this community safe, accurate, and spam-free.",
 };

@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { Open_Sans } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -10,7 +10,7 @@ const openSans = Open_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "About — Fehrist",
+  title: "About - Fehrist",
   description:
     "Fehrist is Pakistan's first centralized event discovery directory. Our mission is simple: to bridge the gap between event organizers and students, professionals, and enthusiasts across the country.",
 };
@@ -64,12 +64,12 @@ export default function AboutPage() {
           Main Developer
         </h2>
         <ul className="list-disc list-inside font-normal text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed mb-6">
-          <li>
-            <span className="font-medium text-slate-900 dark:text-slate-100">
-              Ghulam Murtaza
-            </span>{": "}
-            Creator &amp; Lead Developer
-          </li>
+
+          <span className="font-medium text-slate-900 dark:text-slate-100">
+            Ghulam Murtaza
+          </span>{": "}
+          Creator &amp; Lead Developer
+
         </ul>
 
         {/* ── Tech Stack ──────────────────────────────────────────────────── */}
@@ -114,10 +114,10 @@ export default function AboutPage() {
               Email:
             </strong>{" "}
             <a
-              href="mailto:hello@fehrist.com"
+              href="mailto:perhlybhai@gmail.com"
               className="text-[#186BA7] dark:text-[#60a5fa] hover:underline"
             >
-              hello@fehrist.com
+              perhlybhai@gmail.com
             </a>
           </li>
           <li>
@@ -125,7 +125,7 @@ export default function AboutPage() {
               LinkedIn:
             </strong>{" "}
             <a
-              href="YOUR_LINKEDIN_URL"
+              href="https://linkedin.com/in/ghulam-murtaza-cs"
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#186BA7] dark:text-[#60a5fa] hover:underline"
@@ -138,7 +138,7 @@ export default function AboutPage() {
               GitHub:
             </strong>{" "}
             <a
-              href="YOUR_GITHUB_URL"
+              href="https://github.com/ghulammurtaza-id"
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#186BA7] dark:text-[#60a5fa] hover:underline"

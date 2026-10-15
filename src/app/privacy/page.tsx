@@ -10,7 +10,7 @@ const openSans = Open_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Fehrist",
+  title: "Privacy Policy - Fehrist",
   description:
     "Users fear data misuse. In Pakistan, WhatsApp spam and phone number, mails leaks are massive pain points. We need to explicitly address that fear immediately.",
 };

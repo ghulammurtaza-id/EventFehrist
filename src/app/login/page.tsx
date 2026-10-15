@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import GoogleButton from "@/components/GoogleButton";
 import { supabase } from "@/lib/supabaseClient";
 import { loginUser } from "@/app/actions/auth";
 
@@ -23,6 +24,12 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    if (searchParams.get("error") === "auth_callback_failed") {
+      setErrorMessage("Authentication failed. Please try again.");
+    }
+  }, [searchParams]);
 
   // Forgot password states
   const [resetEmail, setResetEmail] = useState("");
@@ -297,6 +304,18 @@ function LoginForm() {
                   </button>
                 </div>
               </form>
+
+              {/* Divider */}
+              <div className="flex items-center my-5">
+                <div className="flex-1 border-t border-slate-200" />
+                <span className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  OR
+                </span>
+                <div className="flex-1 border-t border-slate-200" />
+              </div>
+
+              {/* Google OAuth Button */}
+              <GoogleButton />
 
               {/* Bottom link */}
               <div className="mt-5 text-xs text-slate-600">

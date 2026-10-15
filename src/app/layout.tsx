@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -8,10 +7,11 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-export const metadata: Metadata = {
-  title: "Fehrist — Pakistan Event Directory",
-  description:
-    "One place for competitions, hackathons, conferences, workshops and meetups nationwide.",
+export const metadata = {
+  title: 'Fehrist - Pakistan Event Directory',
+  icons: {
+    icon: '/favicon.png',
+  },
 };
 
 export default function RootLayout({
