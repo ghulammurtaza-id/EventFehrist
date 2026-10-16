@@ -111,7 +111,18 @@ export default function AboutPage() {
         <ul className="space-y-2.5 font-normal text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed mb-6">
           <li>
             <strong className="font-bold text-slate-900 dark:text-slate-100">
-              Email:
+              Feedback & Bugs:
+            </strong>{" "}
+            <a
+              href="mailto:feedback@efehrist.com"
+              className="text-[#186BA7] dark:text-[#60a5fa] hover:underline"
+            >
+              feedback@efehrist.com
+            </a>
+          </li>
+          <li>
+            <strong className="font-bold text-slate-900 dark:text-slate-100">
+              General Query:
             </strong>{" "}
             <a
               href="mailto:perhlybhai@gmail.com"

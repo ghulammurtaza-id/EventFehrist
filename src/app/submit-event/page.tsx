@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabaseClient";
 import CityCombobox from "@/components/CityCombobox";
 import LoginModal from "@/components/LoginModal";
+import CustomDropdown from "@/components/CustomDropdown";
 import { submitEventAction } from "@/app/actions/events";
 
 const CATEGORIES = [
@@ -485,40 +486,36 @@ function SubmitEventForm() {
                 </div>
 
                 {/* Row 2 — Category | Event Type */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-40">
                   <div>
                     <label htmlFor="category" className="block text-xs font-bold text-slate-900 mb-1">
                       Category <span className="text-red-500">*</span>
                     </label>
-                    <select
+                    <CustomDropdown
                       id="category"
                       name="category"
                       value={form.category}
-                      onChange={set("category")}
-                      className={inputCls}
+                      options={CATEGORIES}
+                      onChange={(category) => setForm((prev) => ({ ...prev, category }))}
                       disabled={isUnauthorized}
-                    >
-                      {CATEGORIES.map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
+                      className="w-full"
+                      ariaLabel="Category"
+                    />
                   </div>
                   <div>
                     <label htmlFor="event_type" className="block text-xs font-bold text-slate-900 mb-1">
                       Event Type <span className="text-red-500">*</span>
                     </label>
-                    <select
+                    <CustomDropdown
                       id="event_type"
                       name="event_type"
                       value={form.event_type}
-                      onChange={set("event_type")}
-                      className={inputCls}
+                      options={EVENT_TYPES}
+                      onChange={(event_type) => setForm((prev) => ({ ...prev, event_type }))}
                       disabled={isUnauthorized}
-                    >
-                      {EVENT_TYPES.map((t) => (
-                        <option key={t} value={t}>{t}</option>
-                      ))}
-                    </select>
+                      className="w-full"
+                      ariaLabel="Event Type"
+                    />
                   </div>
                 </div>
 

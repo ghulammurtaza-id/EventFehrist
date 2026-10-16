@@ -238,105 +238,134 @@ function HomePageInner({
     try {
       const todayPKT = getTodayPKT();
 
-      // ONE single dynamic query with exact count
-      let query = supabase
-        .from("events")
-        .select("*", { count: "exact" })
-        .eq("status", "Approved");
+      // Helper to build the filtered base query
+      const buildQuery = () => {
+        let q = supabase
+          .from("events")
+          .select("*", { count: "exact" })
+          .eq("status", "Approved")
+          .gte("event_date", todayPKT);
 
-      // ── Step 3: Base condition (Hidden Global Condition: Never show past events in PKT) ──
-      query = query.gte("event_date", todayPKT);
+        // ── Server-Side Search Filter (ilike query) ──
+        if (searchQuery.trim()) {
+          q = q.ilike("event_name", `%${searchQuery.trim()}%`);
+        }
 
-      // ── Server-Side Search Filter (ilike query) ──
-      if (searchQuery.trim()) {
-        query = query.ilike("event_name", `%${searchQuery.trim()}%`);
-      }
+        // ── City & Category Filters ──
+        if (selectedCity !== "All Cities") {
+          q = q.eq("city", selectedCity);
+        }
+        if (urlCategory !== "All") {
+          q = q.eq("category", urlCategory);
+        }
 
-      // ── City & Category Filters ──
-      if (selectedCity !== "All Cities") {
-        query = query.eq("city", selectedCity);
-      }
-      if (urlCategory !== "All") {
-        query = query.eq("category", urlCategory);
-      }
+        // ── Event Type, Price, Mode Filters ──
+        if (selectedType !== "All Types") {
+          q = q.eq("event_type", selectedType);
+        }
+        if (selectedPrice === "Free") {
+          q = q.or("fee.ilike.free,fee.eq.0,fee.is.null");
+        } else if (selectedPrice === "Paid") {
+          q = q.not("fee", "ilike", "free").neq("fee", "0").not("fee", "is", null);
+        }
+        if (selectedMode === "Online") {
+          q = q.or("event_type.eq.Webinar,venue_location.ilike.%online%,venue_location.ilike.%zoom%");
+        } else if (selectedMode === "Hybrid") {
+          q = q.ilike("venue_location", "%hybrid%");
+        } else if (selectedMode === "Physical") {
+          q = q
+            .neq("event_type", "Webinar")
+            .not("venue_location", "ilike", "%online%")
+            .not("venue_location", "ilike", "%zoom%")
+            .not("venue_location", "ilike", "%hybrid%");
+        }
 
-      // ── Event Type, Price, Mode Filters ──
-      if (selectedType !== "All Types") {
-        query = query.eq("event_type", selectedType);
-      }
-      if (selectedPrice === "Free") {
-        query = query.or("fee.ilike.free,fee.eq.0,fee.is.null");
-      } else if (selectedPrice === "Paid") {
-        query = query.not("fee", "ilike", "free").neq("fee", "0").not("fee", "is", null);
-      }
-      if (selectedMode === "Online") {
-        query = query.or("event_type.eq.Webinar,venue_location.ilike.%online%,venue_location.ilike.%zoom%");
-      } else if (selectedMode === "Hybrid") {
-        query = query.ilike("venue_location", "%hybrid%");
-      } else if (selectedMode === "Physical") {
-        query = query
-          .neq("event_type", "Webinar")
-          .not("venue_location", "ilike", "%online%")
-          .not("venue_location", "ilike", "%zoom%")
-          .not("venue_location", "ilike", "%hybrid%");
-      }
+        // ── Date Filters (PKT timezone-safe comparisons) ──
+        if (selectedDate === "Today") {
+          q = q.eq("event_date", todayPKT);
+          q = q.or(`registration_deadline.gte.${todayPKT},registration_deadline.is.null`);
+        } else if (selectedDate === "This Week") {
+          q = q.gte("event_date", todayPKT).lte("event_date", addDays(todayPKT, 7));
+          q = q.or(`registration_deadline.gte.${todayPKT},registration_deadline.is.null`);
+        } else if (selectedDate === "This Month") {
+          q = q.gte("event_date", todayPKT).lte("event_date", addDays(todayPKT, 30));
+          q = q.or(`registration_deadline.gte.${todayPKT},registration_deadline.is.null`);
+        } else if (selectedDate === "Next Month") {
+          const nextMonth = getNextMonthRange(todayPKT);
+          q = q.gte("event_date", nextMonth.start).lte("event_date", nextMonth.end);
+          q = q.or(`registration_deadline.gte.${todayPKT},registration_deadline.is.null`);
+        }
 
-      // ── Date Filters (PKT timezone-safe comparisons) ──
-      if (selectedDate === "Today") {
-        query = query.eq("event_date", todayPKT);
-        query = query.or(`registration_deadline.gte.${todayPKT},registration_deadline.is.null`);
-      } else if (selectedDate === "This Week") {
-        query = query.gte("event_date", todayPKT).lte("event_date", addDays(todayPKT, 7));
-        query = query.or(`registration_deadline.gte.${todayPKT},registration_deadline.is.null`);
-      } else if (selectedDate === "This Month") {
-        query = query.gte("event_date", todayPKT).lte("event_date", addDays(todayPKT, 30));
-        query = query.or(`registration_deadline.gte.${todayPKT},registration_deadline.is.null`);
-      } else if (selectedDate === "Next Month") {
-        const nextMonth = getNextMonthRange(todayPKT);
-        query = query.gte("event_date", nextMonth.start).lte("event_date", nextMonth.end);
-        query = query.or(`registration_deadline.gte.${todayPKT},registration_deadline.is.null`);
-      }
+        // ── Server-Side Audience, Level, and Highlights Filters ──
+        if (sidebarFilters.audience.length > 0) {
+          const audienceQuery = [
+            ...new Set([...sidebarFilters.audience, "Open to All"]),
+          ];
+          q = q.overlaps("audience", audienceQuery);
+        }
 
-      // ── Server-Side Audience, Level, and Highlights Filters (Guarded against empty arrays) ──
-      if (sidebarFilters.audience.length > 0) {
-        const audienceQuery = [
-          ...new Set([...sidebarFilters.audience, "Open to All"]),
-        ];
-        query = query.overlaps("audience", audienceQuery);
-      }
+        if (sidebarFilters.level.length > 0) {
+          const levelQuery = [
+            ...new Set([...sidebarFilters.level, "All Levels"]),
+          ];
+          q = q.overlaps("level", levelQuery);
+        }
 
-      if (sidebarFilters.level.length > 0) {
-        const levelQuery = [
-          ...new Set([...sidebarFilters.level, "All Levels"]),
-        ];
-        query = query.overlaps("level", levelQuery);
-      }
+        if (sidebarFilters.highlights.length > 0) {
+          q = q.overlaps("highlights", sidebarFilters.highlights);
+        }
 
-      if (sidebarFilters.highlights.length > 0) {
-        query = query.overlaps("highlights", sidebarFilters.highlights);
-      }
+        return q;
+      };
 
-      // ── Step 2: Sorting Strategy (Urgency + Deterministic with 3rd Tie-Breaker) ──
-      query = query
-        .order("event_date", { ascending: true })
-        .order("registration_deadline", { ascending: true, nullsFirst: false })
-        .order("created_at", { ascending: false });
-
-      // ── Pagination: Applied at the very end of the single query ──
+      // ── Step 2: Sorting Strategy (Open Events First, Closed Events Last) ──
       const targetPage = Math.max(1, urlPage);
       const from = (targetPage - 1) * EVENTS_PER_PAGE;
       const to = from + EVENTS_PER_PAGE - 1;
-      query = query.range(from, to);
 
-      // Execute single query
-      const { data, count, error } = await query;
-      if (error) throw error;
+      // Attempt database-level ordering via computed column `is_registration_closed` first
+      const primaryQuery = buildQuery()
+        .order("is_registration_closed", { ascending: true })
+        .order("event_date", { ascending: true })
+        .order("registration_deadline", { ascending: true, nullsFirst: false })
+        .order("created_at", { ascending: false })
+        .range(from, to);
 
-      // ── Discard stale responses: only apply if this is still the latest request ──
-      if (requestId !== latestRequestIdRef.current) return;
+      const { data, count, error } = await primaryQuery;
 
-      setTotalCount(count ?? 0);
-      setPageEvents((data || []).map(mapDbRow));
+      if (!error) {
+        if (requestId !== latestRequestIdRef.current) return;
+        setTotalCount(count ?? 0);
+        setPageEvents((data || []).map(mapDbRow));
+      } else if (
+        error.code === "42703" ||
+        error.message?.includes("is_registration_closed")
+      ) {
+        // Fallback if computed column function has not yet been executed in Supabase SQL editor:
+        // Query using standard indexed columns, partition open before closed, and paginate
+        const fbQuery = buildQuery()
+          .order("event_date", { ascending: true })
+          .order("registration_deadline", { ascending: true, nullsFirst: false })
+          .order("created_at", { ascending: false });
+
+        const fbRes = await fbQuery;
+        if (fbRes.error) throw fbRes.error;
+        if (requestId !== latestRequestIdRef.current) return;
+
+        const allData = fbRes.data || [];
+        const open = allData.filter(
+          (e) => !e.registration_deadline || e.registration_deadline >= todayPKT
+        );
+        const closed = allData.filter(
+          (e) => e.registration_deadline && e.registration_deadline < todayPKT
+        );
+        const sorted = [...open, ...closed];
+
+        setTotalCount(fbRes.count ?? sorted.length);
+        setPageEvents(sorted.slice(from, to + 1).map(mapDbRow));
+      } else {
+        throw error;
+      }
     } catch (err: unknown) {
       // Only surface errors for the latest request
       if (requestId !== latestRequestIdRef.current) return;

@@ -73,30 +73,60 @@ export default async function HomePage(props: {
   // Server-side initial query using the resolved city variable to prevent the "Karachi flash"
   const todayPKT = getTodayPKT();
 
-  let query = supabase
-    .from("events")
-    .select("*", { count: "exact" })
-    .eq("status", "Approved")
-    .gte("event_date", todayPKT);
-
-  if (initialCity !== "All Cities") {
-    query = query.eq("city", initialCity);
-  }
-
-  query = query
-    .order("event_date", { ascending: true })
-    .order("registration_deadline", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: false })
-    .range(0, 9);
-
   let initialEvents: Event[] = [];
   let initialTotalCount = 0;
 
   try {
-    const { data, count, error } = await query;
+    const buildInitialQuery = () => {
+      let q = supabase
+        .from("events")
+        .select("*", { count: "exact" })
+        .eq("status", "Approved")
+        .gte("event_date", todayPKT);
+
+      if (initialCity !== "All Cities") {
+        q = q.eq("city", initialCity);
+      }
+      return q;
+    };
+
+    // Attempt database-level ordering via computed column `is_registration_closed` first
+    const primaryQuery = buildInitialQuery()
+      .order("is_registration_closed", { ascending: true })
+      .order("event_date", { ascending: true })
+      .order("registration_deadline", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: false })
+      .range(0, 9);
+
+    const { data, count, error } = await primaryQuery;
+
     if (!error && data) {
       initialEvents = data.map(mapDbRow);
       initialTotalCount = count ?? 0;
+    } else if (
+      error &&
+      ((error as any).code === "42703" ||
+        (error as any).message?.includes("is_registration_closed"))
+    ) {
+      // Fallback if computed column function has not yet been executed in Supabase SQL editor:
+      // Query using standard indexed columns, partition open before closed, and take page 1
+      const fbQuery = buildInitialQuery()
+        .order("event_date", { ascending: true })
+        .order("registration_deadline", { ascending: true, nullsFirst: false })
+        .order("created_at", { ascending: false });
+
+      const fbRes = await fbQuery;
+      if (!fbRes.error && fbRes.data) {
+        const open = fbRes.data.filter(
+          (e) => !e.registration_deadline || e.registration_deadline >= todayPKT
+        );
+        const closed = fbRes.data.filter(
+          (e) => e.registration_deadline && e.registration_deadline < todayPKT
+        );
+        const sorted = [...open, ...closed];
+        initialEvents = sorted.slice(0, 10).map(mapDbRow);
+        initialTotalCount = fbRes.count ?? sorted.length;
+      }
     } else if (error) {
       console.error("Initial server fetch error:", {
         message: (error as any)?.message,

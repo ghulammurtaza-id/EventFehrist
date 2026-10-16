@@ -8,7 +8,9 @@ interface CustomDropdownProps {
   onChange: (value: string) => void;
   className?: string;
   id?: string;
+  name?: string;
   ariaLabel?: string;
+  disabled?: boolean;
 }
 
 export default function CustomDropdown({
@@ -17,7 +19,9 @@ export default function CustomDropdown({
   onChange,
   className = "",
   id,
+  name,
   ariaLabel,
+  disabled = false,
 }: CustomDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -49,8 +53,9 @@ export default function CustomDropdown({
   return (
     <div
       ref={dropdownRef}
-      className={className ? `relative w-full sm:w-[160px] ${className}`.trim() : "relative w-full sm:w-[160px]"}
+      className={`relative ${isOpen ? "z-50" : "z-10"} ${className || "w-full sm:w-[160px]"}`.trim()}
     >
+      {name && <input type="hidden" name={name} value={value} />}
       {/* Dropdown Button */}
       <button
         type="button"
@@ -58,8 +63,17 @@ export default function CustomDropdown({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label={ariaLabel || value}
-        onClick={() => setIsOpen((prev) => !prev)}
-        className="w-full h-10 px-4 py-2 text-sm font-medium border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer flex items-center justify-between gap-2 rounded-sm text-left shadow-xs"
+        disabled={disabled}
+        onClick={() => {
+          if (!disabled) {
+            setIsOpen((prev) => !prev);
+          }
+        }}
+        className={`w-full h-10 px-4 py-2 text-sm font-medium border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors flex items-center justify-between gap-2 rounded-sm text-left shadow-xs ${
+          disabled
+            ? "opacity-60 cursor-not-allowed bg-slate-100 dark:bg-slate-800/50"
+            : "hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer focus:outline-none focus:border-[#186BA7] dark:focus:border-[#60a5fa]"
+        }`}
       >
         <span className="truncate">{value}</span>
         <svg
