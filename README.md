@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fehrist
 
-## Getting Started
+**Pakistan's event directory.** Hackathons, conferences, workshops, competitions and meetups, all in one place.
 
-First, run the development server:
+Live at **[efehrist.com](https://efehrist.com)**
+
+## Why this exists
+
+Events in Pakistan are scattered across Instagram posts, WhatsApp groups and random registration links. If you miss the right post, you miss the event. Fehrist puts them in one list so you can open a page and see what's happening in your city, without digging.
+
+## What you can do
+
+- Browse events by city (Karachi, Lahore, Islamabad and more on the way)
+- Filter by category, date, fee and mode (physical or online)
+- Narrow it down by audience (open to all, students, professionals) and level (beginner to advanced)
+- Find events with certificates or prizes
+- Save events you like
+- Submit your own event
+
+## Categories
+
+Technology, Business, Arts & Culture, Gaming, Health & Wellness, Sports, Food & Lifestyle, Education.
+
+## Event types
+
+Conference, Workshop, Hackathon, Meetup, Competition, Exhibition, Seminar, Festival, Webinar.
+
+## Submit an event
+
+Running something? Add it at [efehrist.com/submit](https://efehrist.com/submit).
+
+The more you tell us, the easier it is for people to decide:
+
+- Event name and organizer
+- Category and type
+- Date, start time and end time
+- City and venue (or the link, if it's online)
+- Fee (free or the amount)
+- Short description
+- Registration link
+
+Organizers can find more info at [efehrist.com/for-organizers](https://efehrist.com/for-organizers).
+
+## Feedback
+
+Found a wrong date, a broken link, or have an idea? Email us at **feedback@efehrist.com**. You can also open an issue here on GitHub.
+
+## Tech stack
+
+Fehrist is built with [Next.js](https://nextjs.org) and TypeScript.
+
+## Run it locally
 
 ```bash
+git clone https://github.com/ghulammurtaza-id/EventFehrist.git
+cd EventFehrist
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/          app code and pages
+components/   reusable UI components
+public/       static files and images
+```
 
-## Learn More
+## Contributing
 
-To learn more about Next.js, take a look at the following resources:
+Contributions are welcome. Typo fixes, event corrections and UI improvements are all good. For anything bigger, open an issue first so we can talk about it before you spend time on it.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Fork the repo
+2. Create a branch (`git checkout -b fix/something`)
+3. Commit your changes
+4. Open a pull request
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT. See [LICENSE](LICENSE).
