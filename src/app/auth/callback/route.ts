@@ -13,6 +13,8 @@ import type { NextRequest } from "next/server";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+  const rawNext = searchParams.get("next") ?? "/";
+  const next = rawNext.startsWith("/") ? rawNext : `/${rawNext}`;
 
   if (code) {
     try {
@@ -38,7 +40,7 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      return NextResponse.redirect(new URL("/", origin));
+      return NextResponse.redirect(`${origin}${next}`);
     } catch (error) {
       console.error("Auth callback exception:", error);
       return NextResponse.redirect(
