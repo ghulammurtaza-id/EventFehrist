@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Open_Sans } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -50,7 +50,7 @@ export default function AboutPage() {
         </p>
         <p className="mb-6">
           <a
-            href="https://github.com/YOUR_USERNAME/fehrist"
+            href="https://github.com/ghulammurtaza-id/EventFehrist"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[#186BA7] dark:text-[#60a5fa] font-medium text-sm md:text-base hover:underline inline-flex items-center gap-1"
