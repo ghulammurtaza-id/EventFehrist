@@ -19,6 +19,7 @@ export default function GoogleButton({
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
+      console.log("Initiating OAuth from:", window.location.origin);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {

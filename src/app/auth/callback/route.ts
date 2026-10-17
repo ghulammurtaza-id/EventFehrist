@@ -16,6 +16,8 @@ export async function GET(request: NextRequest) {
   const rawNext = searchParams.get("next") ?? "/";
   const next = rawNext.startsWith("/") ? rawNext : `/${rawNext}`;
 
+  console.log("Callback route hit, code:", code);
+
   if (code) {
     try {
       const cookieStore = await cookies();

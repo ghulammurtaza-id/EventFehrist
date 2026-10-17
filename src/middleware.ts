@@ -4,6 +4,12 @@ import type { NextRequest } from 'next/server'
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
+
+  // Explicitly bypass /auth routes so /auth/callback can exchange session code without interference
+  if (req.nextUrl.pathname.startsWith('/auth')) {
+    return res
+  }
+
   const supabase = createMiddlewareClient({ req, res })
   const {
     data: { session },
