@@ -122,10 +122,10 @@ export default function ForOrganizersPage() {
         <p className="font-normal text-slate-600 dark:text-slate-400 text-sm md:text-base">
           Have questions? Email us at{" "}
           <a
-            href="mailto:efehrist@gmail.com"
+            href="mailto:info@efehrist.com"
             className="font-bold text-slate-900 dark:text-slate-100 hover:underline"
           >
-            efehrist@gmail.com
+            info@efehrist.com
           </a>
         </p>
       </main>
